@@ -107,17 +107,15 @@ namespace ReadSpellData
 
                         dr[0] = sniff.ObjectID;
                         dr[1] = sniff.ObjectType;
-                        dr[2] = sniff.CasterGUID;
-                        dr[3] = sniff.SpellID;
-                        dr[4] = sniff.CastFlags;
-                        dr[5] = sniff.CastFlagsEx;
-                        dr[6] = sniff.CasterTarget;
-                        dr[7] = sniff.CasterTargetID;
-                        dr[8] = sniff.Time;
+                        dr[2] = sniff.SpellID;
+                        dr[3] = sniff.CastFlags;
+                        dr[4] = sniff.CastFlagsEx;
+                        dr[5] = sniff.CasterTarget;
+                        dr[6] = sniff.CasterTargetID;
+                        dr[7] = sniff.Time;
                         Program.creatureDataTable.Rows.Add(dr);
                         sniff.ObjectID = "";
                         sniff.ObjectType = "";
-                        sniff.CasterGUID = "";
                         sniff.SpellID = "";
                         sniff.CastFlags = "";
                         sniff.CastFlagsEx = "";
