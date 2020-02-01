@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29409.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadSpellData", "ReadSpellData\ReadSpellData.csproj", "{A98A8EA2-AC8F-4A13-A4C4-F2E866011C95}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A98A8EA2-AC8F-4A13-A4C4-F2E866011C95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A98A8EA2-AC8F-4A13-A4C4-F2E866011C95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A98A8EA2-AC8F-4A13-A4C4-F2E866011C95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A98A8EA2-AC8F-4A13-A4C4-F2E866011C95}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B2BDD000-7659-476F-8A88-63F34AFA1707}
+	EndGlobalSection
+EndGlobal
