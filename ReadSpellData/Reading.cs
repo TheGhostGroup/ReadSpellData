@@ -99,28 +99,32 @@ namespace ReadSpellData
 
                 if (sniff.ObjectID != "")
                 {
-                    Console.WriteLine("Found: " + sniff.ObjectID + " GUID: " + sniff.CasterGUID);
-                    DataRow dr = Program.creatureDataTable.NewRow();
+                    DataRow[] result = Program.creatureDataTable.Select("SpellID = '" + sniff.SpellID + "'");
+                    if (result.Length == 0)
+                    {
+                        Console.WriteLine("Found: " + sniff.ObjectID + " GUID: " + sniff.CasterGUID);
+                        DataRow dr = Program.creatureDataTable.NewRow();
 
-                    dr[0] = sniff.ObjectID;
-                    dr[1] = sniff.ObjectType;
-                    dr[2] = sniff.CasterGUID;
-                    dr[3] = sniff.SpellID;
-                    dr[4] = sniff.CastFlags;
-                    dr[5] = sniff.CastFlagsEx;
-                    dr[6] = sniff.CasterTarget;
-                    dr[7] = sniff.CasterTargetID;
-                    dr[8] = sniff.Time;
-                    Program.creatureDataTable.Rows.Add(dr);
-                    sniff.ObjectID = "";
-                    sniff.ObjectType = "";
-                    sniff.CasterGUID = "";
-                    sniff.SpellID = "";
-                    sniff.CastFlags = "";
-                    sniff.CastFlagsEx = "";
-                    sniff.CasterTarget = "";
-                    sniff.CasterTargetID = "";
-                    sniff.Time = "";
+                        dr[0] = sniff.ObjectID;
+                        dr[1] = sniff.ObjectType;
+                        dr[2] = sniff.CasterGUID;
+                        dr[3] = sniff.SpellID;
+                        dr[4] = sniff.CastFlags;
+                        dr[5] = sniff.CastFlagsEx;
+                        dr[6] = sniff.CasterTarget;
+                        dr[7] = sniff.CasterTargetID;
+                        dr[8] = sniff.Time;
+                        Program.creatureDataTable.Rows.Add(dr);
+                        sniff.ObjectID = "";
+                        sniff.ObjectType = "";
+                        sniff.CasterGUID = "";
+                        sniff.SpellID = "";
+                        sniff.CastFlags = "";
+                        sniff.CastFlagsEx = "";
+                        sniff.CasterTarget = "";
+                        sniff.CasterTargetID = "";
+                        sniff.Time = "";
+                    }
                 }
             }
         }
