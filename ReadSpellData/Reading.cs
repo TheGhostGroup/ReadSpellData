@@ -15,7 +15,7 @@ namespace ReadSpellData
         public static void GetCreatureSpells()
         {
             var lines = File.ReadAllLines(Program.fileName);
-            CreatureStructure.SMSG_SPELL_GO sniff;
+            ObjectStructure.SMSG_SPELL_GO sniff;
 
             sniff.ObjectID = "";
             sniff.ObjectType = "";
@@ -30,6 +30,7 @@ namespace ReadSpellData
 
             Console.WriteLine("Reading SMSG_SPELL_GO packets...");
 
+            int ItemIndex = 0;
             for (int i = 1; i < lines.Count(); i++)
             {
                 if (lines[i].Contains("SMSG_SPELL_GO"))
@@ -44,7 +45,7 @@ namespace ReadSpellData
 
                         if (lines[i].Contains("(Cast) CasterGUID: Full:"))
                         {
-                            if (!lines[i].Contains("Player/0") & !lines[i].Contains("Item/0"))
+                            if (!lines[i].Contains("Player/0") /*& !lines[i].Contains("Item/0")*/)
                             {
                                 string[] packetline = lines[i].Split(new char[] { ' ' });
                                 sniff.CasterGUID = packetline[3];
@@ -99,30 +100,29 @@ namespace ReadSpellData
 
                 if (sniff.ObjectID != "")
                 {
-                    DataRow[] result = Program.creatureDataTable.Select("SpellID = '" + sniff.SpellID + "'");
-                    if (result.Length == 0)
-                    {
-                        Console.WriteLine("Found: " + sniff.ObjectID + " GUID: " + sniff.CasterGUID);
-                        DataRow dr = Program.creatureDataTable.NewRow();
+                    Console.WriteLine("Found entry: " + sniff.ObjectID + " Spell: " + sniff.SpellID);
+                    DataRow dr = Program.objectDataTable.NewRow();
 
-                        dr[0] = sniff.ObjectID;
-                        dr[1] = sniff.ObjectType;
-                        dr[2] = sniff.SpellID;
-                        dr[3] = sniff.CastFlags;
-                        dr[4] = sniff.CastFlagsEx;
-                        dr[5] = sniff.CasterTarget;
-                        dr[6] = sniff.CasterTargetID;
-                        dr[7] = sniff.Time;
-                        Program.creatureDataTable.Rows.Add(dr);
-                        sniff.ObjectID = "";
-                        sniff.ObjectType = "";
-                        sniff.SpellID = "";
-                        sniff.CastFlags = "";
-                        sniff.CastFlagsEx = "";
-                        sniff.CasterTarget = "";
-                        sniff.CasterTargetID = "";
-                        sniff.Time = "";
-                    }
+                    ItemIndex += 1;
+
+                    dr[0] = sniff.ObjectID;
+                    dr[1] = sniff.ObjectType;
+                    dr[2] = sniff.SpellID;
+                    dr[3] = sniff.CastFlags;
+                    dr[4] = sniff.CastFlagsEx;
+                    dr[5] = sniff.CasterTarget;
+                    dr[6] = sniff.CasterTargetID;
+                    dr[7] = sniff.Time;
+                    dr[9] = ItemIndex;
+                    Program.objectDataTable.Rows.Add(dr);
+                    sniff.ObjectID = "";
+                    sniff.ObjectType = "";
+                    sniff.SpellID = "";
+                    sniff.CastFlags = "";
+                    sniff.CastFlagsEx = "";
+                    sniff.CasterTarget = "";
+                    sniff.CasterTargetID = "";
+                    sniff.Time = "";
                 }
             }
         }

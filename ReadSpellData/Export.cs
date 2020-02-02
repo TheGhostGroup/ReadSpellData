@@ -17,7 +17,7 @@ namespace ReadSpellData
             Console.WriteLine("- Exporting CreatureData to Excel document...");
             using (var workbook = new XLWorkbook())
             {
-                workbook.Worksheets.Add(Program.creatureDataTable, "PlayerData");
+                workbook.Worksheets.Add(Program.objectDataTable, "ObjectData");
 
                 // Save
                 workbook.SaveAs("Data.xlsx");

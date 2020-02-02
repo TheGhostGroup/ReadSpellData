@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ReadSpellData
 {
-    class CreatureStructure
+    class ObjectStructure
     {
         public struct SMSG_SPELL_GO
         {
