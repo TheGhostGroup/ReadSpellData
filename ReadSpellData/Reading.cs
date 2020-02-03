@@ -45,7 +45,7 @@ namespace ReadSpellData
 
                         if (lines[i].Contains("(Cast) CasterGUID: Full:"))
                         {
-                            if (!lines[i].Contains("Player/0") /*& !lines[i].Contains("Item/0")*/)
+                            if (!lines[i].Contains("Player/0") & !lines[i].Contains("Item/0") & !lines[i].Contains("Pet/0"))
                             {
                                 string[] packetline = lines[i].Split(new char[] { ' ' });
                                 sniff.CasterGUID = packetline[3];
