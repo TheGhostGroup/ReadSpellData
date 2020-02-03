@@ -65,9 +65,6 @@ namespace ReadSpellData
                 string CastFlags = rowDetails["CastFlags"].ToString();
                 string CastFlagsEx = rowDetails["CastFlagsEx"].ToString();
 
-                if (Number == 4)
-                    Console.WriteLine("found it");
-
                 DataRow[] spellIDResult = Program.objectDataTable.Select("SpellID = '" + SpellID + "'");
                 foreach (DataRow rowDetails_ in spellIDResult)
                 {
@@ -76,9 +73,6 @@ namespace ReadSpellData
                     string CastFlags_ = rowDetails_["CastFlags"].ToString();
                     string CastFlagsEx_ = rowDetails_["CastFlagsEx"].ToString();
                     int Number_ = Convert.ToInt32(rowDetails_["Number"].ToString());
-
-                    if (Number == 4)
-                        Console.WriteLine("found it");
 
                     if (Number != Number_)
                         if (ObjectID == ObjectID_)
