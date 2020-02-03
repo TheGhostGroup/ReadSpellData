@@ -60,7 +60,7 @@ namespace ReadSpellData
                 string ObjectID = rowDetails["ObjectID"].ToString();
                 string ObjectType = rowDetails["ObjectType"].ToString();
                 string IntervalTime = rowDetails["IntervalTime"].ToString();
-                int Number = Convert.ToInt32(rowDetails["Number"].ToString());
+                int index = Program.objectDataTable.Rows.IndexOf(rowDetails);
                 string SpellID = rowDetails["SpellID"].ToString();
                 string CastFlags = rowDetails["CastFlags"].ToString();
                 string CastFlagsEx = rowDetails["CastFlagsEx"].ToString();
@@ -72,15 +72,18 @@ namespace ReadSpellData
                     string SpellID_ = rowDetails_["SpellID"].ToString();
                     string CastFlags_ = rowDetails_["CastFlags"].ToString();
                     string CastFlagsEx_ = rowDetails_["CastFlagsEx"].ToString();
-                    int Number_ = Convert.ToInt32(rowDetails_["Number"].ToString());
+                    int index_ = Program.objectDataTable.Rows.IndexOf(rowDetails_);
 
-                    if (Number != Number_)
+                    if (index != index_)
                         if (ObjectID == ObjectID_)
                             if (SpellID_ == SpellID)
                                 if (CastFlags_ == CastFlags)
                                     if (CastFlagsEx_ == CastFlagsEx)
-                                        deleteList.Add(Number);
+                                        deleteList.Add(index);
                 }
+
+                /*if (IntervalTime == "")
+                    deleteList.Add(index);*/
             }
 
             foreach (var deleteItemNumber in deleteList)

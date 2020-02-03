@@ -17,7 +17,7 @@ namespace ReadSpellData
         static void Main(string[] args)
         {
             Console.WriteLine("- Exporting creature data from parsed sniff..");
-            string colObject = "ObjectID,ObjectType,SpellID,CastFlags,CastFlagsEx,CasterTargetID,CasterTarget,Time,IntervalTime,Number";
+            string colObject = "ObjectID,ObjectType,SpellID,CastFlags,CastFlagsEx,CasterTargetID,CasterTarget,Time,IntervalTime";
             // Setup Columns for for objectDataTable
             string[] columns = colObject.Split(new char[] { ',' });
             foreach (var column in columns)
