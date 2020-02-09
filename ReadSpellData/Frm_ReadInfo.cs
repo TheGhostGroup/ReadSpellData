@@ -22,6 +22,7 @@ namespace ReadSpellData
         public Frm_ReadInfo()
         {
             InitializeComponent();
+            Reading.SetupDataTable();
         }
 
         private void loadB_Click(object sender, EventArgs e)
@@ -36,8 +37,11 @@ namespace ReadSpellData
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
+                toolStripStatusLabel.Text = "Loading...";
+                statusStrip.Update();
+                Data.fileName = System.IO.Path.GetFileName(openFileDialog.FileName);
                 LoadSniffFileIntoDatatable(openFileDialog.FileName);
-                toolStripStatusLabel.Text = openFileDialog.FileName + " is selected for input.";
+                toolStripStatusLabel.Text = Data.fileName;
             }
             else
             {
@@ -55,12 +59,9 @@ namespace ReadSpellData
             if (line == "# TrinityCore - WowPacketParser")
             {
                 Utility.WriteLog("- Exporting creature data from parsed sniff..");
-                toolStripStatusLabel.Text = "Loading File...";
-                Reading.SetupDataTable();
                 Reading.GetCreatureSpells(fileName.ToString());
-                Data.Checking();
+                Data.ParseData();
                 FillListBoxs();
-                toolStripStatusLabel.Text = "File loaded";
             }
             else
             {
@@ -189,39 +190,9 @@ namespace ReadSpellData
 
         private void exportSQLB_Click(object sender, EventArgs e)
         {
-            /*
-            CREATE TABLE `readspelldata` (
-	            `ObjectID` TEXT NULL,
-	            `ObjectType` TEXT NULL,
-	            `SpellID` TEXT NULL,
-	            `CastFlags` TEXT NULL,
-	            `CastFlagsEx` TEXT NULL,
-	            `CasterTargetID` TEXT NULL,
-	            `CasterTarget` TEXT NULL,
-	            `IntervalTime` TEXT NULL
-            )
-            COLLATE='latin1_swedish_ci'
-            ENGINE=InnoDB;
-            */
-
-            foreach (string ObjectID in spellListBox.Items.Cast<String>().ToList())
-            {
-                DataRow[] objectIDResult = Frm_ReadInfo.objectDataTable.Select("ObjectID = '" + ObjectID + "'");
-                foreach (DataRow r in objectIDResult)
-                {
-                    string objectid = r["ObjectID"].ToString();
-                    string objecttype = r["ObjectType"].ToString();
-                    string spellid = r["SpellID"].ToString();
-                    string castflags = r["CastFlags"].ToString();
-                    string castflagsex = r["CastFlagsEx"].ToString();
-                    string castertargetid = r["CasterTargetID"].ToString();
-                    string castertarget = r["CasterTarget"].ToString();
-                    string intervaltime = r["IntervalTime"].ToString();
-
-                    string sql = "INSERT IGNORE INTO `readspelldata` (`ObjectID`, `ObjectType`, `SpellID`, `CastFlags`, `CastFlagsEx`, `CasterTargetID`, `CasterTarget`, `IntervalTime`) VALUES ('" + objectid + "', '" + objecttype + "', '" + spellid + "', '" + castflags + "', '" + castflagsex + "', '" + castertargetid + "', '" + castertarget + "', '" + intervaltime + "');";
-                    Database.WriteDB(sql);
-                }
-            }
+            string sql = Data.GenerateSaveString();
+            if (Utility.ShowSaveDialog(ref sql) == DialogResult.OK)
+                Database.WriteDB(sql);
         }
     }
 }

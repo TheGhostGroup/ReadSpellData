@@ -14,7 +14,7 @@ namespace ReadSpellData
     {
         public static void SetupDataTable()
         {
-            string colObject = "ObjectID,ObjectType,SpellID,CastFlags,CastFlagsEx,CasterTargetID,CasterTarget,Time,IntervalTime,Number";
+            string colObject = "ObjectID,ObjectType,CasterGUID,SpellID,CastFlags,CastFlagsEx,CasterTargetID,CasterTarget,Time,IntervalTime,Number";
             // Setup Columns for for objectDataTable
             string[] columns = colObject.Split(new char[] { ',' });
             foreach (var column in columns)
@@ -29,6 +29,7 @@ namespace ReadSpellData
 
         public static void GetCreatureSpells(string fileName)
         {
+            Frm_ReadInfo.objectDataTable.Rows.Clear();
             var lines = File.ReadAllLines(fileName);
             ObjectStructure.SMSG_SPELL_GO sniff;
 
@@ -120,13 +121,14 @@ namespace ReadSpellData
                     ItemIndex += 1;
                     dr[0] = sniff.ObjectID;
                     dr[1] = sniff.ObjectType;
-                    dr[2] = sniff.SpellID;
-                    dr[3] = sniff.CastFlags;
-                    dr[4] = sniff.CastFlagsEx;
-                    dr[5] = sniff.CasterTarget;
-                    dr[6] = sniff.CasterTargetID;
-                    dr[7] = sniff.Time;
-                    dr[9] = ItemIndex;
+                    dr[2] = sniff.CasterGUID;
+                    dr[3] = sniff.SpellID;
+                    dr[4] = sniff.CastFlags;
+                    dr[5] = sniff.CastFlagsEx;
+                    dr[6] = sniff.CasterTarget;
+                    dr[7] = sniff.CasterTargetID;
+                    dr[8] = sniff.Time;
+                    dr[10] = ItemIndex;
                     Frm_ReadInfo.objectDataTable.Rows.Add(dr);
                     sniff.ObjectID = "";
                     sniff.ObjectType = "";

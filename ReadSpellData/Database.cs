@@ -6,8 +6,6 @@ namespace ReadSpellData
 {
     class Database
     {
-        private static MySqlConnection conn;
-
         public static void WriteDB(string sqlstring)
         {
             MySqlConnection conn = new MySqlConnection();
