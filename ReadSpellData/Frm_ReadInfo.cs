@@ -218,7 +218,7 @@ namespace ReadSpellData
                     string castertarget = r["CasterTarget"].ToString();
                     string intervaltime = r["IntervalTime"].ToString();
 
-                    string sql = "INSERT IGNORE INTO `vmangos_world`.`readspelldata` (`ObjectID`, `ObjectType`, `SpellID`, `CastFlags`, `CastFlagsEx`, `CasterTargetID`, `CasterTarget`, `IntervalTime`) VALUES ('" + objectid + "', '" + objecttype + "', '" + spellid + "', '" + castflags + "', '" + castflagsex + "', '" + castertargetid + "', '" + castertarget + "', '" + intervaltime + "');";
+                    string sql = "INSERT IGNORE INTO `readspelldata` (`ObjectID`, `ObjectType`, `SpellID`, `CastFlags`, `CastFlagsEx`, `CasterTargetID`, `CasterTarget`, `IntervalTime`) VALUES ('" + objectid + "', '" + objecttype + "', '" + spellid + "', '" + castflags + "', '" + castflagsex + "', '" + castertargetid + "', '" + castertarget + "', '" + intervaltime + "');";
                     Database.WriteDB(sql);
                 }
             }
