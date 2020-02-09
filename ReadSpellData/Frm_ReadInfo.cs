@@ -92,17 +92,22 @@ namespace ReadSpellData
             List<string> lst = new List<string>();
             string ObjectID = entryListBox.SelectedItem.ToString();
 
-            DataRow[] objectIDResult = Frm_ReadInfo.objectDataTable.Select("ObjectID = '" + ObjectID + "'");
-            foreach (DataRow r in objectIDResult)
+            if (Data.castsList.Count > 0)
             {
-                string spellID = r["SpellID"].ToString();
-                string CasterTargetID = r["CasterTargetID"].ToString();
-                if (!lst.Contains(spellID))
+                foreach (SpellCastData listData in Data.castsList)
                 {
-                    if (CasterTargetID != "")
-                        lst.Add(spellID + " " + CasterTargetID);
-                    else
-                        lst.Add(spellID);
+                    //if (!lst.Contains(ObjectID))
+                    if (ObjectID == listData.casterId.ToString())
+                    {
+                        if (listData.targetType != "")
+                        {
+                            lst.Add(listData.spellId.ToString() + " " + listData.targetType.ToString());
+                        }
+                        else
+                        {
+                            lst.Add(listData.spellId.ToString());
+                        }
+                    }
                 }
             }
 
