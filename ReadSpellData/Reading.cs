@@ -12,9 +12,24 @@ namespace ReadSpellData
 {
     class Reading
     {
-        public static void GetCreatureSpells()
+        public static void SetupDataTable()
         {
-            var lines = File.ReadAllLines(Program.fileName);
+            string colObject = "ObjectID,ObjectType,SpellID,CastFlags,CastFlagsEx,CasterTargetID,CasterTarget,Time,IntervalTime,Number";
+            // Setup Columns for for objectDataTable
+            string[] columns = colObject.Split(new char[] { ',' });
+            foreach (var column in columns)
+                Frm_ReadInfo.objectDataTable.Columns.Add(column);
+
+            string colObjectTiming = "ObjectID";
+            // Setup Columns for for objectTimingDataTable
+            string[] columnsTiming = colObjectTiming.Split(new char[] { ',' });
+            foreach (var column in columnsTiming)
+                Frm_ReadInfo.objectTimingDataTable.Columns.Add(column);
+        }
+
+        public static void GetCreatureSpells(string fileName)
+        {
+            var lines = File.ReadAllLines(fileName);
             ObjectStructure.SMSG_SPELL_GO sniff;
 
             sniff.ObjectID = "";
@@ -28,8 +43,9 @@ namespace ReadSpellData
             sniff.CasterTargetID = "";
             sniff.Time = "";
 
-            Console.WriteLine("Reading SMSG_SPELL_GO packets...");
+            Utility.WriteLog("Reading SMSG_SPELL_GO packets...");
 
+            int ItemIndex = 0;
             for (int i = 1; i < lines.Count(); i++)
             {
                 if (lines[i].Contains("SMSG_SPELL_GO"))
@@ -99,9 +115,9 @@ namespace ReadSpellData
 
                 if (sniff.ObjectID != "")
                 {
-                    Console.WriteLine("Found entry: " + sniff.ObjectID + " Spell: " + sniff.SpellID);
-                    DataRow dr = Program.objectDataTable.NewRow();
-
+                    Utility.WriteLog("Found entry: " + sniff.ObjectID + " Spell: " + sniff.SpellID);
+                    DataRow dr = Frm_ReadInfo.objectDataTable.NewRow();
+                    ItemIndex += 1;
                     dr[0] = sniff.ObjectID;
                     dr[1] = sniff.ObjectType;
                     dr[2] = sniff.SpellID;
@@ -110,7 +126,8 @@ namespace ReadSpellData
                     dr[5] = sniff.CasterTarget;
                     dr[6] = sniff.CasterTargetID;
                     dr[7] = sniff.Time;
-                    Program.objectDataTable.Rows.Add(dr);
+                    dr[9] = ItemIndex;
+                    Frm_ReadInfo.objectDataTable.Rows.Add(dr);
                     sniff.ObjectID = "";
                     sniff.ObjectType = "";
                     sniff.SpellID = "";

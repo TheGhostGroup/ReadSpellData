@@ -16,25 +16,25 @@ namespace ReadSpellData
         public static void Checking()
         {
             // min/max timing check
-            foreach (DataRow rowData in Program.objectDataTable.Rows)
+            foreach (DataRow rowData in Frm_ReadInfo.objectDataTable.Rows)
             {
                 int ObjectID = Convert.ToInt32(rowData[0]);
 
                 // Insert into object timing table
-                DataRow dr = Program.objectTimingDataTable.NewRow();
+                DataRow dr = Frm_ReadInfo.objectTimingDataTable.NewRow();
                 dr[0] = ObjectID;
-                Program.objectTimingDataTable.Rows.Add(dr);
+                Frm_ReadInfo.objectTimingDataTable.Rows.Add(dr);
 
-                DataRow[] objectTimingResult = Program.objectTimingDataTable.Select("ObjectID = '" + ObjectID + "'");
+                DataRow[] objectTimingResult = Frm_ReadInfo.objectTimingDataTable.Select("ObjectID = '" + ObjectID + "'");
                 if (objectTimingResult.Length <= 2)
                 {
-                    DataRow[] objectResult = Program.objectDataTable.Select("ObjectID = '" + ObjectID + "'");
+                    DataRow[] objectResult = Frm_ReadInfo.objectDataTable.Select("ObjectID = '" + ObjectID + "'");
                     if (objectResult.Length > 1)
                     {
-                        Console.WriteLine("Checking ObjectID: " + ObjectID);
+                        Utility.WriteLog("Checking ObjectID: " + ObjectID);
                         DateTime? dateTimeFirst = null;
                         DateTime? dateTimeSecond = null;
-                        int index = Program.objectDataTable.Rows.IndexOf(rowData);
+                        int index = Frm_ReadInfo.objectDataTable.Rows.IndexOf(rowData);
 
                         foreach (DataRow rowDetails in objectResult)
                         {
@@ -48,38 +48,53 @@ namespace ReadSpellData
                         TimeSpan difference = TimeSpan.Zero;
                         TimeSpan duration = dateTimeFirst.Value - dateTimeSecond.Value;
                         difference = difference.Add(duration);
-                        Console.WriteLine("Found difference in time: " + difference);
-                        Program.objectDataTable.Rows[index][8] = difference.ToString();
+                        Utility.WriteLog("Found difference in time: " + difference);
+                        Frm_ReadInfo.objectDataTable.Rows[index][8] = difference.ToString();
                     }
                 }
             }
 
             // delete unwanted records
-            foreach (DataRow rowDetails in Program.objectDataTable.Rows)
+            foreach (DataRow rowDetails in Frm_ReadInfo.objectDataTable.Rows)
             {
                 string ObjectID = rowDetails["ObjectID"].ToString();
                 string ObjectType = rowDetails["ObjectType"].ToString();
                 string IntervalTime = rowDetails["IntervalTime"].ToString();
-                int index = Program.objectDataTable.Rows.IndexOf(rowDetails);
+                int index = Frm_ReadInfo.objectDataTable.Rows.IndexOf(rowDetails);
+                int Number = Convert.ToInt32(rowDetails["Number"].ToString());
                 string SpellID = rowDetails["SpellID"].ToString();
                 string CastFlags = rowDetails["CastFlags"].ToString();
                 string CastFlagsEx = rowDetails["CastFlagsEx"].ToString();
 
-                DataRow[] spellIDResult = Program.objectDataTable.Select("SpellID = '" + SpellID + "'");
+                DataRow[] spellIDResult = Frm_ReadInfo.objectDataTable.Select("SpellID = '" + SpellID + "'");
                 foreach (DataRow rowDetails_ in spellIDResult)
                 {
                     string ObjectID_ = rowDetails_["ObjectID"].ToString();
                     string SpellID_ = rowDetails_["SpellID"].ToString();
                     string CastFlags_ = rowDetails_["CastFlags"].ToString();
                     string CastFlagsEx_ = rowDetails_["CastFlagsEx"].ToString();
-                    int index_ = Program.objectDataTable.Rows.IndexOf(rowDetails_);
+                    int Number_ = Convert.ToInt32(rowDetails_["Number"].ToString());
+                    //int index_ = Frm_ReadInfo.objectDataTable.Rows.IndexOf(rowDetails_);
 
-                    if (index != index_)
+                    if (Number != Number_)
+                    {
                         if (ObjectID == ObjectID_)
+                        {
                             if (SpellID_ == SpellID)
+                            {
                                 if (CastFlags_ == CastFlags)
+                                {
                                     if (CastFlagsEx_ == CastFlagsEx)
-                                        deleteList.Add(index);
+                                    {
+                                        if (!deleteList.Contains(Number))
+                                        {
+                                            deleteList.Add(Number);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 /*if (IntervalTime == "")
@@ -90,16 +105,17 @@ namespace ReadSpellData
             {
                 try
                 {
-                    DataRow[] row = Program.objectDataTable.Select("Number = '" + deleteItemNumber + "'");
+                    DataRow[] row = Frm_ReadInfo.objectDataTable.Select("Number = '" + deleteItemNumber + "'");
+                    //DataRow rowDetails in Frm_ReadInfo.objectDataTable.Rows
                     for (int i = row.Length - 1; i >= 0; i--)
                     {
-                        Console.WriteLine("Delete: " + deleteItemNumber);
+                        Utility.WriteLog("Delete: " + deleteItemNumber);
                         row[i].Delete();
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.ToString());
+                    Utility.WriteLog(ex.ToString());
                 }
             }
         }

@@ -14,10 +14,10 @@ namespace ReadSpellData
     {
         public static void ExportXLS()
         {
-            Console.WriteLine("- Exporting CreatureData to Excel document...");
+            Utility.WriteLog("- Exporting CreatureData to Excel document...");
             using (var workbook = new XLWorkbook())
             {
-                workbook.Worksheets.Add(Program.objectDataTable, "ObjectData");
+                workbook.Worksheets.Add(Frm_ReadInfo.objectDataTable, "ObjectData");
 
                 // Save
                 workbook.SaveAs("Data.xlsx");
