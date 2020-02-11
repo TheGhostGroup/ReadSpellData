@@ -170,7 +170,13 @@ namespace ReadSpellData
                 {
                     if (count > 0)
                         query += ",";
-                    query += "\n(" + listData.casterId + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(listData.casterType.Replace("/0", "")) + "', " + listData.spellId + ", " + listData.castFlags + ", " + listData.castFlagsEx + ", " + listData.targetId + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(listData.targetType.Replace("/0", "")) + "', '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(fileName) + "')";
+
+                    // do not export player guid to db
+                    UInt32 targetId = listData.targetId;
+                    if (listData.targetType.Contains("Player"))
+                        targetId = 0;
+
+                    query += "\n(" + listData.casterId + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(listData.casterType.Replace("/0", "")) + "', " + listData.spellId + ", " + listData.castFlags + ", " + listData.castFlagsEx + ", " + targetId + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(listData.targetType.Replace("/0", "")) + "', '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(fileName) + "')";
                     count++;
                 }
                 query += ";\n";
