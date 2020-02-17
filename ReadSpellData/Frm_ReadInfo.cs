@@ -95,7 +95,9 @@ namespace ReadSpellData
                     Reading.GetCreatureSpellsClassic(fileName.ToString());
 
                 Data.ParseData();
-                FillListView();
+
+                if (chkShowInListView.Checked == true)
+                    FillListView();
             }
             else
             {
@@ -197,6 +199,14 @@ namespace ReadSpellData
         private void Frm_ReadInfo_ResizeEnd(object sender, EventArgs e)
         {
             lstSpellCasts.Size = new Size(this.Size.Width - 32, statusStrip.Location.Y - lstSpellCasts.Location.Y - 10);
+        }
+
+        private void chkShowInListView_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkShowInListView.Checked == true)
+                FillListView();
+            else
+                lstSpellCasts.Items.Clear();
         }
     }
 }
