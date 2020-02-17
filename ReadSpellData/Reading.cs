@@ -27,6 +27,39 @@ namespace ReadSpellData
                 Frm_ReadInfo.objectTimingDataTable.Columns.Add(column);
         }
 
+        public static UInt32 GetBuild(string fileName)
+        {
+            string line = "";
+            UInt32 counter = 0;
+            System.IO.StreamReader file = new System.IO.StreamReader(fileName);
+            while ((line = file.ReadLine()) != null)
+            {
+                // The build should be in the first few lines if it was detected. Don't read whole file.
+                if (counter > 10)
+                    break;
+
+                if (line.Contains("# Detected build: "))
+                {
+                    string buildString = "";
+                    line = line.Replace("# Detected build: ", "");
+                    foreach (char chr in line)
+                    {
+                        if (Char.IsDigit(chr))
+                            buildString += chr;
+                        else
+                            buildString = "";
+                    }
+
+                    UInt32 build = 0;
+                    if (UInt32.TryParse(buildString, out build))
+                        return build;
+                }
+                counter++;
+            }
+
+            return 0;
+        }
+
         public static void GetCreatureSpells(string fileName)
         {
             Frm_ReadInfo.objectDataTable.Rows.Clear();

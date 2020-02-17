@@ -63,6 +63,15 @@ namespace ReadSpellData
 
         public void LoadParsedSniff(string fileName)
         {
+            Data.clientBuild = Reading.GetBuild(fileName);
+            if (Data.clientBuild == 0)
+            {
+                string buildString = "";
+                if (Utility.ShowInputDialog(ref buildString, "Enter client build number") == DialogResult.OK)
+                {
+                    UInt32.TryParse(buildString, out Data.clientBuild);
+                }
+            }
             toolStripStatusLabel.Text = "Loading...";
             statusStrip.Update();
             Data.fileName = System.IO.Path.GetFileName(fileName);
@@ -85,7 +94,7 @@ namespace ReadSpellData
             }
             else
             {
-                MessageBox.Show(openFileDialog.FileName + " is is not a valid TrinityCore parsed sniff file.", "File Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                MessageBox.Show(fileName + " is is not a valid TrinityCore parsed sniff file.", "File Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
             }
         }
 
