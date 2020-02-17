@@ -88,7 +88,12 @@ namespace ReadSpellData
             if (line == "# TrinityCore - WowPacketParser")
             {
                 Utility.WriteLog("- Exporting creature data from parsed sniff..");
-                Reading.GetCreatureSpells(fileName.ToString());
+
+                if (Data.clientBuild <= 12340)
+                    Reading.GetCreatureSpellsWotlk(fileName.ToString());
+                else
+                    Reading.GetCreatureSpellsClassic(fileName.ToString());
+
                 Data.ParseData();
                 FillListView();
             }
