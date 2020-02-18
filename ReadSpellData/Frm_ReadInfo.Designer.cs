@@ -44,6 +44,7 @@
             this.clmTargetType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.clmTime = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.chkShowUnique = new System.Windows.Forms.CheckBox();
+            this.chkShowInListView = new System.Windows.Forms.CheckBox();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -165,23 +166,38 @@
             this.chkShowUnique.AutoSize = true;
             this.chkShowUnique.Location = new System.Drawing.Point(358, 17);
             this.chkShowUnique.Name = "chkShowUnique";
-            this.chkShowUnique.Size = new System.Drawing.Size(138, 17);
+            this.chkShowUnique.Size = new System.Drawing.Size(110, 17);
             this.chkShowUnique.TabIndex = 16;
-            this.chkShowUnique.Text = "Show unique casts only";
+            this.chkShowUnique.Text = "Unique casts only";
             this.chkShowUnique.UseVisualStyleBackColor = true;
             this.chkShowUnique.CheckedChanged += new System.EventHandler(this.chkShowUnique_CheckedChanged);
+            // 
+            // chkShowInListView
+            // 
+            this.chkShowInListView.AutoSize = true;
+            this.chkShowInListView.Checked = true;
+            this.chkShowInListView.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkShowInListView.Location = new System.Drawing.Point(474, 17);
+            this.chkShowInListView.Name = "chkShowInListView";
+            this.chkShowInListView.Size = new System.Drawing.Size(104, 17);
+            this.chkShowInListView.TabIndex = 17;
+            this.chkShowInListView.Text = "Show in list view";
+            this.chkShowInListView.UseVisualStyleBackColor = true;
+            this.chkShowInListView.CheckedChanged += new System.EventHandler(this.chkShowInListView_CheckedChanged);
             // 
             // Frm_ReadInfo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(697, 613);
+            this.Controls.Add(this.chkShowInListView);
             this.Controls.Add(this.chkShowUnique);
             this.Controls.Add(this.lstSpellCasts);
             this.Controls.Add(this.exportSQLB);
             this.Controls.Add(this.exportB);
             this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.loadB);
+            this.MinimumSize = new System.Drawing.Size(600, 200);
             this.Name = "Frm_ReadInfo";
             this.Text = "Read Spell Info";
             this.ResizeEnd += new System.EventHandler(this.Frm_ReadInfo_ResizeEnd);
@@ -209,5 +225,6 @@
         private System.Windows.Forms.ColumnHeader clmTargetType;
         private System.Windows.Forms.ColumnHeader clmTime;
         private System.Windows.Forms.CheckBox chkShowUnique;
+        private System.Windows.Forms.CheckBox chkShowInListView;
     }
 }

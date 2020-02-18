@@ -53,6 +53,7 @@ namespace ReadSpellData
         public static List<SpellCastData> castsList = new List<SpellCastData>();
         public static List<SpellCastTimes> castTimesList = new List<SpellCastTimes>();
         public static string fileName = "";
+        public static UInt32 clientBuild = 0;
         public static void ParseData()
         {
             // Remove any old data.
@@ -144,7 +145,8 @@ namespace ReadSpellData
                         SpellCooldownData tempCooldownData = spellCooldowns[cdKey];
                         if (tempCooldownData.cooldownMin > diff.TotalSeconds)
                             tempCooldownData.cooldownMin = (UInt32)diff.TotalSeconds;
-                        if (tempCooldownData.cooldownMax < diff.TotalSeconds)
+                        if ((tempCooldownData.cooldownMax < diff.TotalSeconds) &&
+                            !((tempCooldownData.cooldownMax > 0) && (diff.TotalSeconds > tempCooldownData.cooldownMax * 10))) // ignore if new max cooldown is absurdly bigger than last one, it could be that creature evaded and was engaged again later
                             tempCooldownData.cooldownMax = (UInt32)diff.TotalSeconds;
                         spellCooldowns[cdKey] = tempCooldownData;
                         break;
@@ -164,7 +166,7 @@ namespace ReadSpellData
             if (castsList.Count > 0)
             {
                 query += "DELETE FROM `sniff_spell_casts` WHERE `sniffName`='" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(fileName) + "';\n";
-                query += "REPLACE INTO `sniff_spell_casts` (`casterId`, `casterType`, `spellId`, `castFlags`, `castFlagsEx`, `targetId`, `targetType`, `sniffName`) VALUES";
+                query += "REPLACE INTO `sniff_spell_casts` (`casterId`, `casterType`, `spellId`, `castFlags`, `castFlagsEx`, `targetId`, `targetType`, `build`, `sniffName`) VALUES";
                 UInt32 count = 0;
                 foreach (SpellCastData listData in castsList)
                 {
@@ -176,7 +178,7 @@ namespace ReadSpellData
                     if (listData.targetType.Contains("Player"))
                         targetId = 0;
 
-                    query += "\n(" + listData.casterId + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(listData.casterType.Replace("/0", "")) + "', " + listData.spellId + ", " + listData.castFlags + ", " + listData.castFlagsEx + ", " + targetId + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(listData.targetType.Replace("/0", "")) + "', '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(fileName) + "')";
+                    query += "\n(" + listData.casterId + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(listData.casterType.Replace("/0", "")) + "', " + listData.spellId + ", " + listData.castFlags + ", " + listData.castFlagsEx + ", " + targetId + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(listData.targetType.Replace("/0", "")) + "', " + clientBuild + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(fileName) + "')";
                     count++;
                 }
                 query += ";\n";
@@ -184,13 +186,13 @@ namespace ReadSpellData
             if (spellCooldowns.Count > 0)
             {
                 query += "DELETE FROM `sniff_spell_cooldowns` WHERE `sniffName`='" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(fileName) + "';\n";
-                query += "REPLACE INTO `sniff_spell_cooldowns` (`casterId`, `casterType`, `spellId`, `cooldownMin`, `cooldownMax`, `sniffName`) VALUES";
+                query += "REPLACE INTO `sniff_spell_cooldowns` (`casterId`, `casterType`, `spellId`, `cooldownMin`, `cooldownMax`, `build`, `sniffName`) VALUES";
                 UInt32 count = 0;
                 foreach (KeyValuePair<SpellCooldownKey, SpellCooldownData> entry in spellCooldowns)
                 {
                     if (count > 0)
                         query += ",";
-                    query += "\n(" + entry.Key.casterId + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(entry.Key.casterType.Replace("/0", "")) + "', " + entry.Key.spellId + ", " + entry.Value.cooldownMin + ", " + entry.Value.cooldownMax + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(fileName) + "')";
+                    query += "\n(" + entry.Key.casterId + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(entry.Key.casterType.Replace("/0", "")) + "', " + entry.Key.spellId + ", " + entry.Value.cooldownMin + ", " + entry.Value.cooldownMax + ", " + clientBuild + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(fileName) + "')";
                     count++;
                 }
                 query += ";\n";

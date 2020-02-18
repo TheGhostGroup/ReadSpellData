@@ -27,7 +27,149 @@ namespace ReadSpellData
                 Frm_ReadInfo.objectTimingDataTable.Columns.Add(column);
         }
 
-        public static void GetCreatureSpells(string fileName)
+        public static UInt32 GetBuild(string fileName)
+        {
+            string line = "";
+            UInt32 counter = 0;
+            System.IO.StreamReader file = new System.IO.StreamReader(fileName);
+            while ((line = file.ReadLine()) != null)
+            {
+                // The build should be in the first few lines if it was detected. Don't read whole file.
+                if (counter > 10)
+                    break;
+
+                if (line.Contains("# Detected build: "))
+                {
+                    string buildString = "";
+                    line = line.Replace("# Detected build: ", "");
+                    foreach (char chr in line)
+                    {
+                        if (Char.IsDigit(chr))
+                            buildString += chr;
+                        else
+                            buildString = "";
+                    }
+
+                    UInt32 build = 0;
+                    if (UInt32.TryParse(buildString, out build))
+                        return build;
+                }
+                counter++;
+            }
+
+            return 0;
+        }
+
+        public static void GetCreatureSpellsWotlk(string fileName)
+        {
+            Frm_ReadInfo.objectDataTable.Rows.Clear();
+            var lines = File.ReadAllLines(fileName);
+            ObjectStructure.SMSG_SPELL_GO sniff;
+
+            sniff.ObjectID = "";
+            sniff.ObjectType = "";
+            sniff.CasterGUID = "";
+            sniff.CasterUnit = "";
+            sniff.SpellID = "";
+            sniff.CastFlags = "";
+            sniff.CastFlagsEx = "";
+            sniff.CasterTarget = "";
+            sniff.CasterTargetID = "";
+            sniff.Time = "";
+
+            Utility.WriteLog("Reading SMSG_SPELL_GO packets...");
+
+            int ItemIndex = 0;
+            for (int i = 1; i < lines.Count(); i++)
+            {
+                if (lines[i].Contains("SMSG_SPELL_GO"))
+                {
+                    string[] values = lines[i].Split(new char[] { ' ' });
+                    string[] time = values[9].Split(new char[] { '.' });
+                    sniff.Time = time[0];
+
+                    do
+                    {
+                        i++;
+
+                        if (lines[i].Contains("Caster GUID: Full:"))
+                        {
+                            if (lines[i].Contains("Type: Creature") || lines[i].Contains("Type: GameObject"))
+                            {
+                                string[] packetline = lines[i].Split(new char[] { ' ' });
+                                sniff.CasterGUID = packetline[3];
+                                sniff.ObjectType = packetline[5];
+                                sniff.ObjectID = packetline[7];
+                            }
+                            else
+                            {
+                                sniff.ObjectID = "";
+                                sniff.CasterGUID = "";
+                                sniff.CasterUnit = "";
+                                sniff.SpellID = "";
+                                sniff.CastFlags = "";
+                                sniff.CastFlagsEx = "";
+                                sniff.CasterTarget = "";
+                                sniff.Time = "";
+                                break;
+                            }
+                        }
+
+                        if (lines[i].Contains("Spell ID:"))
+                        {
+                            string[] packetline = lines[i].Split(new char[] { ' ' });
+                            sniff.SpellID = packetline[2];
+                        }
+
+                        if (lines[i].Contains("Cast Flags:"))
+                        {
+                            string[] packetline = lines[i].Split(new char[] { ' ' });
+                            sniff.CastFlags = packetline[2];
+                        }
+
+                        if (lines[i].Contains("[0] Hit GUID: Full:"))
+                        {
+                            string[] packetline = lines[i].Split(new char[] { ' ' });
+
+                            if (packetline.Length > 5)
+                            {
+                                sniff.CasterTarget = packetline[6];
+                                sniff.CasterTargetID = packetline[8];
+                            }
+                        }
+
+                    } while (lines[i] != "");
+                }
+
+                if (sniff.ObjectID != "")
+                {
+                    Utility.WriteLog("Found entry: " + sniff.ObjectID + " Spell: " + sniff.SpellID);
+                    DataRow dr = Frm_ReadInfo.objectDataTable.NewRow();
+                    ItemIndex += 1;
+                    dr[0] = sniff.ObjectID;
+                    dr[1] = sniff.ObjectType;
+                    dr[2] = sniff.CasterGUID;
+                    dr[3] = sniff.SpellID;
+                    dr[4] = sniff.CastFlags;
+                    dr[5] = sniff.CastFlagsEx;
+                    dr[6] = sniff.CasterTarget;
+                    dr[7] = sniff.CasterTargetID;
+                    dr[8] = sniff.Time;
+                    dr[10] = ItemIndex;
+                    Frm_ReadInfo.objectDataTable.Rows.Add(dr);
+                    sniff.ObjectID = "";
+                    sniff.ObjectType = "";
+                    sniff.SpellID = "";
+                    sniff.CastFlags = "";
+                    sniff.CastFlagsEx = "";
+                    sniff.CasterTarget = "";
+                    sniff.CasterTargetID = "";
+                    sniff.Time = "";
+                }
+            }
+        }
+
+        public static void GetCreatureSpellsClassic(string fileName)
         {
             Frm_ReadInfo.objectDataTable.Rows.Clear();
             var lines = File.ReadAllLines(fileName);

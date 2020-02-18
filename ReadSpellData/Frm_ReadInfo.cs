@@ -63,6 +63,15 @@ namespace ReadSpellData
 
         public void LoadParsedSniff(string fileName)
         {
+            Data.clientBuild = Reading.GetBuild(fileName);
+            if (Data.clientBuild == 0)
+            {
+                string buildString = "";
+                if (Utility.ShowInputDialog(ref buildString, "Enter client build number") == DialogResult.OK)
+                {
+                    UInt32.TryParse(buildString, out Data.clientBuild);
+                }
+            }
             toolStripStatusLabel.Text = "Loading...";
             statusStrip.Update();
             Data.fileName = System.IO.Path.GetFileName(fileName);
@@ -79,13 +88,20 @@ namespace ReadSpellData
             if (line == "# TrinityCore - WowPacketParser")
             {
                 Utility.WriteLog("- Exporting creature data from parsed sniff..");
-                Reading.GetCreatureSpells(fileName.ToString());
+
+                if (Data.clientBuild <= 12340)
+                    Reading.GetCreatureSpellsWotlk(fileName.ToString());
+                else
+                    Reading.GetCreatureSpellsClassic(fileName.ToString());
+
                 Data.ParseData();
-                FillListView();
+
+                if (chkShowInListView.Checked == true)
+                    FillListView();
             }
             else
             {
-                MessageBox.Show(openFileDialog.FileName + " is is not a valid TrinityCore parsed sniff file.", "File Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                MessageBox.Show(fileName + " is is not a valid TrinityCore parsed sniff file.", "File Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
             }
         }
 
@@ -183,6 +199,14 @@ namespace ReadSpellData
         private void Frm_ReadInfo_ResizeEnd(object sender, EventArgs e)
         {
             lstSpellCasts.Size = new Size(this.Size.Width - 32, statusStrip.Location.Y - lstSpellCasts.Location.Y - 10);
+        }
+
+        private void chkShowInListView_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkShowInListView.Checked == true)
+                FillListView();
+            else
+                lstSpellCasts.Items.Clear();
         }
     }
 }
