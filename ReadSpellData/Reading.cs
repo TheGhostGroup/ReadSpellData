@@ -60,7 +60,7 @@ namespace ReadSpellData
             return 0;
         }
 
-        public static void GetCreatureSpellsWotlk(string fileName)
+        public static void GetCreatureSpellsCata(string fileName)
         {
             Frm_ReadInfo.objectDataTable.Rows.Clear();
             var lines = File.ReadAllLines(fileName);

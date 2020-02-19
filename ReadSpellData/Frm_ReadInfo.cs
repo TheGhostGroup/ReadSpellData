@@ -18,11 +18,16 @@ namespace ReadSpellData
         public static DataTable objectDataTable = new DataTable("Objects");
         public static DataTable objectTimingDataTable = new DataTable("ObjectTiming");
         public static List<string> entryList = new List<string>();
+        public MixedListSorter listSorter = new MixedListSorter();
+
+        const uint MAX_LIST_VIEW_ITEMS = 2000; // no sorting if count exceeds this to prevent freeze
+        const uint CLIENT_BUILD_4_3_4 = 15595;
+        const uint CLIENT_BUILD_5_4_8 = 18414;
 
         public Frm_ReadInfo()
         {
             InitializeComponent();
-            lstSpellCasts.ListViewItemSorter = new MixedListSorter();
+            lstSpellCasts.ListViewItemSorter = listSorter;
             Reading.SetupDataTable();
         }
 
@@ -89,8 +94,13 @@ namespace ReadSpellData
             {
                 Utility.WriteLog("- Exporting creature data from parsed sniff..");
 
-                if (Data.clientBuild <= 12340)
-                    Reading.GetCreatureSpellsWotlk(fileName.ToString());
+                if (Data.clientBuild <= CLIENT_BUILD_4_3_4)
+                    Reading.GetCreatureSpellsCata(fileName.ToString());
+                else if (Data.clientBuild <= CLIENT_BUILD_5_4_8)
+                {
+                    MessageBox.Show("This client build is not currently supported.");
+                    return;
+                }
                 else
                     Reading.GetCreatureSpellsClassic(fileName.ToString());
 
@@ -110,6 +120,11 @@ namespace ReadSpellData
             lstSpellCasts.Items.Clear();
             if (chkShowUnique.Checked)
             {
+                if (Data.castsList.Count > MAX_LIST_VIEW_ITEMS)
+                    lstSpellCasts.ListViewItemSorter = null;
+                else
+                    lstSpellCasts.ListViewItemSorter = listSorter;
+
                 foreach (SpellCastData castDetails in Data.castsList)
                 {
                     ListViewItem lvi = new ListViewItem();
@@ -132,6 +147,11 @@ namespace ReadSpellData
             }
             else
             {
+                if (Frm_ReadInfo.objectDataTable.Rows.Count > MAX_LIST_VIEW_ITEMS)
+                    lstSpellCasts.ListViewItemSorter = null;
+                else
+                    lstSpellCasts.ListViewItemSorter = listSorter;
+
                 foreach (DataRow rowDetails in Frm_ReadInfo.objectDataTable.Rows)
                 {
                     string rowObjectID = rowDetails["ObjectID"].ToString();
