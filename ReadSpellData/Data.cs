@@ -46,12 +46,19 @@ namespace ReadSpellData
         public UInt32 cooldownMin;
         public UInt32 cooldownMax;
     }
-    
+    struct PetSpellCooldown
+    {
+        public UInt32 index;
+        public UInt32 spellId;
+        public UInt32 cooldown;
+    }
     class Data
     {
         public static Dictionary<SpellCooldownKey, SpellCooldownData> spellCooldowns = new Dictionary<SpellCooldownKey, SpellCooldownData>();
+        public static List<Tuple<UInt32, List<PetSpellCooldown>>> petSpellCooldowns = new List<Tuple<UInt32, List<PetSpellCooldown>>>();
         public static List<SpellCastData> castsList = new List<SpellCastData>();
         public static List<SpellCastTimes> castTimesList = new List<SpellCastTimes>();
+
         public static string fileName = "";
         public static UInt32 clientBuild = 0;
         public static void ParseData()
@@ -194,6 +201,24 @@ namespace ReadSpellData
                         query += ",";
                     query += "\n(" + entry.Key.casterId + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(entry.Key.casterType.Replace("/0", "")) + "', " + entry.Key.spellId + ", " + entry.Value.cooldownMin + ", " + entry.Value.cooldownMax + ", " + clientBuild + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(fileName) + "')";
                     count++;
+                }
+                query += ";\n";
+            }
+            if (petSpellCooldowns.Count > 0)
+            {
+                query += "DELETE FROM `sniff_pet_cooldowns` WHERE `sniffName`='" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(fileName) + "';\n";
+                query += "REPLACE INTO `sniff_pet_cooldowns` (`creatureId`, `index`, `spellId`, `cooldown`, `build`, `sniffName`) VALUES";
+                UInt32 count = 0;
+                foreach (Tuple<UInt32, List<PetSpellCooldown>> entry in petSpellCooldowns)
+                {
+                    foreach (PetSpellCooldown spellCD in entry.Item2)
+                    {
+                        if (count > 0)
+                            query += ",";
+
+                        query += "\n(" + entry.Item1 + ", '" + spellCD.index + ", " + spellCD.spellId + ", " + spellCD.cooldown + ")";
+                        count++;
+                    }
                 }
                 query += ";\n";
             }

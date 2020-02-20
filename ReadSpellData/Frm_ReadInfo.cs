@@ -102,7 +102,11 @@ namespace ReadSpellData
                     return;
                 }
                 else
+                {
                     Reading.GetCreatureSpellsClassic(fileName.ToString());
+                    Reading.GetPetCooldownsClassic(fileName.ToString());
+                }
+                    
 
                 Data.ParseData();
 
