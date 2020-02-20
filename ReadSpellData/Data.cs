@@ -52,10 +52,16 @@ namespace ReadSpellData
         public UInt32 spellId;
         public UInt32 cooldown;
     }
+    struct PetSpellData
+    {
+        public UInt32 action;
+        public UInt32 spellId;
+    }
     class Data
     {
-        public static Dictionary<SpellCooldownKey, SpellCooldownData> spellCooldowns = new Dictionary<SpellCooldownKey, SpellCooldownData>();
-        public static List<Tuple<UInt32, List<PetSpellCooldown>>> petSpellCooldowns = new List<Tuple<UInt32, List<PetSpellCooldown>>>();
+        public static Dictionary<SpellCooldownKey, SpellCooldownData> spellCooldownsMap = new Dictionary<SpellCooldownKey, SpellCooldownData>();
+        public static Dictionary<UInt32, PetSpellData[]> petSpellsMap = new Dictionary<UInt32, PetSpellData[]>();
+        public static List<Tuple<UInt32, List<PetSpellCooldown>>> petSpellCooldownsList = new List<Tuple<UInt32, List<PetSpellCooldown>>>();
         public static List<SpellCastData> castsList = new List<SpellCastData>();
         public static List<SpellCastTimes> castTimesList = new List<SpellCastTimes>();
 
@@ -64,7 +70,7 @@ namespace ReadSpellData
         public static void ParseData()
         {
             // Remove any old data.
-            spellCooldowns.Clear();
+            spellCooldownsMap.Clear();
             castsList.Clear();
             castTimesList.Clear();
 
@@ -98,12 +104,12 @@ namespace ReadSpellData
 
                 SpellCooldownKey cdKey = new SpellCooldownKey(rowObjectID, rowObjectType, rowSpellID);
                 // Make sure the cooldown dictionary contains all the spell ids.
-                if (!spellCooldowns.ContainsKey(cdKey))
+                if (!spellCooldownsMap.ContainsKey(cdKey))
                 {
                     SpellCooldownData tmpCooldownData;
                     tmpCooldownData.cooldownMin = UInt32.MaxValue;
                     tmpCooldownData.cooldownMax = UInt32.MinValue;
-                    spellCooldowns.Add(cdKey, tmpCooldownData);
+                    spellCooldownsMap.Add(cdKey, tmpCooldownData);
                 }
 
                 // Skip cast data we already have.
@@ -149,22 +155,22 @@ namespace ReadSpellData
                     {
                         SpellCooldownKey cdKey = new SpellCooldownKey(currentCast.casterId, currentCast.casterType, currentCast.spellId);
                         System.TimeSpan diff = nextCast.castTime.Subtract(currentCast.castTime);
-                        SpellCooldownData tempCooldownData = spellCooldowns[cdKey];
+                        SpellCooldownData tempCooldownData = spellCooldownsMap[cdKey];
                         if (tempCooldownData.cooldownMin > diff.TotalSeconds)
                             tempCooldownData.cooldownMin = (UInt32)diff.TotalSeconds;
                         if ((tempCooldownData.cooldownMax < diff.TotalSeconds) &&
                             !((tempCooldownData.cooldownMax > 0) && (diff.TotalSeconds > tempCooldownData.cooldownMax * 10))) // ignore if new max cooldown is absurdly bigger than last one, it could be that creature evaded and was engaged again later
                             tempCooldownData.cooldownMax = (UInt32)diff.TotalSeconds;
-                        spellCooldowns[cdKey] = tempCooldownData;
+                        spellCooldownsMap[cdKey] = tempCooldownData;
                         break;
                     }
                 }
             }
 
             // Remove rows from spell cooldowns table if the cast was seen only once, and thus cooldown data has default values.
-            foreach (var item in spellCooldowns.Where(kvp => kvp.Value.cooldownMin == UInt32.MaxValue).ToList())
+            foreach (var item in spellCooldownsMap.Where(kvp => kvp.Value.cooldownMin == UInt32.MaxValue).ToList())
             {
-                spellCooldowns.Remove(item.Key);
+                spellCooldownsMap.Remove(item.Key);
             }
         }
         public static string GenerateSaveString()
@@ -190,12 +196,12 @@ namespace ReadSpellData
                 }
                 query += ";\n";
             }
-            if (spellCooldowns.Count > 0)
+            if (spellCooldownsMap.Count > 0)
             {
                 query += "DELETE FROM `sniff_spell_cooldowns` WHERE `sniffName`='" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(fileName) + "';\n";
                 query += "REPLACE INTO `sniff_spell_cooldowns` (`casterId`, `casterType`, `spellId`, `cooldownMin`, `cooldownMax`, `build`, `sniffName`) VALUES";
                 UInt32 count = 0;
-                foreach (KeyValuePair<SpellCooldownKey, SpellCooldownData> entry in spellCooldowns)
+                foreach (KeyValuePair<SpellCooldownKey, SpellCooldownData> entry in spellCooldownsMap)
                 {
                     if (count > 0)
                         query += ",";
@@ -204,21 +210,43 @@ namespace ReadSpellData
                 }
                 query += ";\n";
             }
-            if (petSpellCooldowns.Count > 0)
+            if (petSpellCooldownsList.Count > 0)
             {
                 query += "DELETE FROM `sniff_pet_cooldowns` WHERE `sniffName`='" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(fileName) + "';\n";
                 query += "REPLACE INTO `sniff_pet_cooldowns` (`creatureId`, `index`, `spellId`, `cooldown`, `build`, `sniffName`) VALUES";
                 UInt32 count = 0;
-                foreach (Tuple<UInt32, List<PetSpellCooldown>> entry in petSpellCooldowns)
+                foreach (Tuple<UInt32, List<PetSpellCooldown>> entry in petSpellCooldownsList)
                 {
                     foreach (PetSpellCooldown spellCD in entry.Item2)
                     {
                         if (count > 0)
                             query += ",";
 
-                        query += "\n(" + entry.Item1 + ", '" + spellCD.index + ", " + spellCD.spellId + ", " + spellCD.cooldown + ")";
+                        query += "\n(" + entry.Item1 + ", " + spellCD.index + ", " + spellCD.spellId + ", " + spellCD.cooldown + ", " + clientBuild + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(fileName) + "')";
                         count++;
                     }
+                }
+                query += ";\n";
+            }
+            if (petSpellsMap.Count > 0)
+            {
+                query += "DELETE FROM `sniff_pet_spells` WHERE `sniffName`='" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(fileName) + "';\n";
+                query += "REPLACE INTO `sniff_pet_spells` (`creatureId`, `action1`, `spellId1`, `action2`, `spellId2`, `action3`, `spellId3`, `action4`, `spellId4`, `action5`, `spellId5`, `action6`, `spellId6`, `action7`, `spellId7`, `action8`, `spellId8`, `action9`, `spellId9`, `action10`, `spellId10`, `build`, `sniffName`) VALUES";
+                UInt32 count = 0;
+                foreach (KeyValuePair<UInt32, PetSpellData[]> entry in petSpellsMap)
+                {
+                    if (count > 0)
+                        query += ",";
+
+                    query += "\n(" + entry.Key;
+
+                    for (uint i = 0; i < 10; i++)
+                    {
+                        query += ", " + entry.Value[i].action + ", " + entry.Value[i].spellId;
+                    }
+
+                    query += ", " + clientBuild + ", '" + MySql.Data.MySqlClient.MySqlHelper.EscapeString(fileName) + "')";
+                    count++;
                 }
                 query += ";\n";
             }

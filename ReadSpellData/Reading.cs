@@ -284,9 +284,81 @@ namespace ReadSpellData
             }
         }
 
+        public static void GetPetSpellsClassic(string fileName)
+        {
+            Data.petSpellsMap.Clear();
+            var lines = File.ReadAllLines(fileName);
+            Utility.WriteLog("Reading SMSG_PET_SPELLS_MESSAGE packets...");
+
+            for (int i = 1; i < lines.Count(); i++)
+            {
+                if (lines[i].Contains("SMSG_PET_SPELLS_MESSAGE"))
+                {
+                    UInt32 currentCreatureId = 0;
+                    PetSpellData[] spellData = new PetSpellData[10];
+
+                    do
+                    {
+                        i++;
+
+                        if (lines[i].Contains("PetGUID: Full:"))
+                        {
+                            if (lines[i].Contains("Creature/0"))
+                            {
+                                string[] packetline = lines[i].Split(new char[] { ' ' });
+                                string id = packetline[8];
+                                UInt32.TryParse(id, out currentCreatureId);
+                            }
+                        }
+
+                        if (lines[i].Contains("(ActionButtons)") && lines[i].Contains("Action:"))
+                        {
+                            string[] packetline = lines[i].Split(new char[] { ' ' });
+
+                            string indexString = packetline[1].Replace("[", "").Replace("]", "");
+                            UInt32 index = 0;
+                            bool okIndex = UInt32.TryParse(indexString, out index);
+                            string actionString = packetline[3];
+                            UInt32 action = 0;
+                            bool okAction = UInt32.TryParse(actionString, out action);
+
+                            if (okIndex && okAction)
+                            {
+                                spellData[index].action = action;
+                            }
+                        }
+
+                        if (lines[i].Contains("(ActionButtons)") && lines[i].Contains("SpellID:"))
+                        {
+                            string[] packetline = lines[i].Split(new char[] { ' ' });
+
+                            string indexString = packetline[1].Replace("[", "").Replace("]", "");
+                            UInt32 index = 0;
+                            bool okIndex = UInt32.TryParse(indexString, out index);
+                            string actionString = packetline[3];
+                            UInt32 spellId = 0;
+                            bool okSpell = UInt32.TryParse(actionString, out spellId);
+
+                            if (okIndex && okSpell)
+                            {
+                                spellData[index].spellId = spellId;
+                            }
+                        }
+
+                    } while (lines[i] != "");
+
+                    if (currentCreatureId != 0)
+                    {
+                        if (!Data.petSpellsMap.ContainsKey(currentCreatureId))
+                            Data.petSpellsMap.Add(currentCreatureId, spellData);
+                    }
+                }
+            }
+        }
+
         public static void GetPetCooldownsClassic(string fileName)
         {
-            Data.petSpellCooldowns.Clear();
+            Data.petSpellCooldownsList.Clear();
             var lines = File.ReadAllLines(fileName);
 
             UInt32 currentCreatureId = 0;
@@ -365,7 +437,7 @@ namespace ReadSpellData
                             cooldownData.cooldown = 0;
                         }
 
-                        Data.petSpellCooldowns.Add(new Tuple<UInt32, List<PetSpellCooldown>>(currentCreatureId, currentList));
+                        Data.petSpellCooldownsList.Add(new Tuple<UInt32, List<PetSpellCooldown>>(currentCreatureId, currentList));
                         currentCreatureId = 0;
                         currentList = null;
                     }

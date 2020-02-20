@@ -105,6 +105,7 @@ namespace ReadSpellData
                 {
                     Reading.GetCreatureSpellsClassic(fileName.ToString());
                     Reading.GetPetCooldownsClassic(fileName.ToString());
+                    Reading.GetPetSpellsClassic(fileName.ToString());
                 }
                     
 
@@ -142,8 +143,8 @@ namespace ReadSpellData
 
                     string cooldown = "";
                     SpellCooldownKey cdKey = new SpellCooldownKey(castDetails.casterId, castDetails.casterType, castDetails.spellId);
-                    if (Data.spellCooldowns.ContainsKey(cdKey))
-                        cooldown = Data.spellCooldowns[cdKey].cooldownMin.ToString() + " - " + Data.spellCooldowns[cdKey].cooldownMax.ToString();
+                    if (Data.spellCooldownsMap.ContainsKey(cdKey))
+                        cooldown = Data.spellCooldownsMap[cdKey].cooldownMin.ToString() + " - " + Data.spellCooldownsMap[cdKey].cooldownMax.ToString();
                     lvi.SubItems.Add(cooldown);
 
                     lstSpellCasts.Items.Add(lvi);
