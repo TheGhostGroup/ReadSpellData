@@ -60,7 +60,7 @@ namespace ReadSpellData
             return 0;
         }
 
-        public static void GetCreatureSpellsWotlk(string fileName)
+        public static void GetCreatureSpellsCata(string fileName)
         {
             Frm_ReadInfo.objectDataTable.Rows.Clear();
             var lines = File.ReadAllLines(fileName);
@@ -280,6 +280,167 @@ namespace ReadSpellData
                     sniff.CasterTarget = "";
                     sniff.CasterTargetID = "";
                     sniff.Time = "";
+                }
+            }
+        }
+
+        public static void GetPetSpellsClassic(string fileName)
+        {
+            Data.petSpellsMap.Clear();
+            var lines = File.ReadAllLines(fileName);
+            Utility.WriteLog("Reading SMSG_PET_SPELLS_MESSAGE packets...");
+
+            for (int i = 1; i < lines.Count(); i++)
+            {
+                if (lines[i].Contains("SMSG_PET_SPELLS_MESSAGE"))
+                {
+                    UInt32 currentCreatureId = 0;
+                    PetSpellData[] spellData = new PetSpellData[10];
+
+                    do
+                    {
+                        i++;
+
+                        if (lines[i].Contains("PetGUID: Full:"))
+                        {
+                            if (lines[i].Contains("Creature/0"))
+                            {
+                                string[] packetline = lines[i].Split(new char[] { ' ' });
+                                string id = packetline[8];
+                                UInt32.TryParse(id, out currentCreatureId);
+                            }
+                        }
+
+                        if (lines[i].Contains("(ActionButtons)") && lines[i].Contains("Action:"))
+                        {
+                            string[] packetline = lines[i].Split(new char[] { ' ' });
+
+                            string indexString = packetline[1].Replace("[", "").Replace("]", "");
+                            UInt32 index = 0;
+                            bool okIndex = UInt32.TryParse(indexString, out index);
+                            string actionString = packetline[3];
+                            UInt32 action = 0;
+                            bool okAction = UInt32.TryParse(actionString, out action);
+
+                            if (okIndex && okAction)
+                            {
+                                spellData[index].action = action;
+                            }
+                        }
+
+                        if (lines[i].Contains("(ActionButtons)") && lines[i].Contains("SpellID:"))
+                        {
+                            string[] packetline = lines[i].Split(new char[] { ' ' });
+
+                            string indexString = packetline[1].Replace("[", "").Replace("]", "");
+                            UInt32 index = 0;
+                            bool okIndex = UInt32.TryParse(indexString, out index);
+                            string actionString = packetline[3];
+                            UInt32 spellId = 0;
+                            bool okSpell = UInt32.TryParse(actionString, out spellId);
+
+                            if (okIndex && okSpell)
+                            {
+                                spellData[index].spellId = spellId;
+                            }
+                        }
+
+                    } while (lines[i] != "");
+
+                    if (currentCreatureId != 0)
+                    {
+                        if (!Data.petSpellsMap.ContainsKey(currentCreatureId))
+                            Data.petSpellsMap.Add(currentCreatureId, spellData);
+                    }
+                }
+            }
+        }
+
+        public static void GetPetCooldownsClassic(string fileName)
+        {
+            Data.petSpellCooldownsList.Clear();
+            var lines = File.ReadAllLines(fileName);
+
+            UInt32 currentCreatureId = 0;
+            List<PetSpellCooldown> currentList = null;
+            PetSpellCooldown cooldownData;
+            cooldownData.index = 0;
+            cooldownData.spellId = 0;
+            cooldownData.cooldown = 0;
+
+            Utility.WriteLog("Reading SMSG_SPELL_COOLDOWN packets...");
+
+            for (int i = 1; i < lines.Count(); i++)
+            {
+                if (lines[i].Contains("SMSG_SPELL_COOLDOWN"))
+                {
+                    do
+                    {
+                        i++;
+
+                        if (lines[i].Contains("Caster: Full:"))
+                        {
+                            if (lines[i].Contains("Creature/0"))
+                            {
+                                string[] packetline = lines[i].Split(new char[] { ' ' });
+                                string id = packetline[8];
+                                
+                                if (UInt32.TryParse(id, out currentCreatureId))
+                                {
+                                    currentList = new List<PetSpellCooldown>();
+                                }
+                            }
+                        }
+
+                        if (lines[i].Contains("SrecID:"))
+                        {
+                            string[] packetline = lines[i].Split(new char[] { ' ' });
+
+                            string indexString = packetline[0].Replace("[", "").Replace("]", "");
+                            UInt32 index = 0;
+                            bool okIndex = UInt32.TryParse(indexString, out index);
+                            string spellIdString = packetline[2];
+                            UInt32 spellId = 0;
+                            bool okSpell = UInt32.TryParse(spellIdString, out spellId);
+
+                            if (okIndex && okSpell)
+                            {
+                                if (index != cooldownData.index)
+                                {
+                                    currentList.Add(cooldownData);
+                                    cooldownData.index = 0;
+                                    cooldownData.spellId = 0;
+                                    cooldownData.cooldown = 0;
+                                }
+
+                                cooldownData.index = index;
+                                cooldownData.spellId = spellId;
+                            }
+                        }
+
+                        if (lines[i].Contains("ForcedCooldown:"))
+                        {
+                            string[] packetline = lines[i].Split(new char[] { ' ' });
+                            string cooldown = packetline[2];
+                            UInt32.TryParse(cooldown, out cooldownData.cooldown);
+                        }
+
+                    } while (lines[i] != "");
+
+                    if (currentCreatureId != 0)
+                    {
+                        if (cooldownData.spellId != 0)
+                        {
+                            currentList.Add(cooldownData);
+                            cooldownData.index = 0;
+                            cooldownData.spellId = 0;
+                            cooldownData.cooldown = 0;
+                        }
+
+                        Data.petSpellCooldownsList.Add(new Tuple<UInt32, List<PetSpellCooldown>>(currentCreatureId, currentList));
+                        currentCreatureId = 0;
+                        currentList = null;
+                    }
                 }
             }
         }
