@@ -362,7 +362,7 @@ namespace ReadSpellData
             var lines = File.ReadAllLines(fileName);
 
             UInt32 currentCreatureId = 0;
-            List<PetSpellCooldown> currentList = new List<PetSpellCooldown>();
+            List<PetSpellCooldown> currentList = null;
             PetSpellCooldown cooldownData;
             cooldownData.index = 0;
             cooldownData.spellId = 0;
@@ -391,40 +391,42 @@ namespace ReadSpellData
                                 }
                             }
                         }
-
-                        if (lines[i].Contains("SrecID:"))
+                        
+                        if (currentList != null)
                         {
-                            string[] packetline = lines[i].Split(new char[] { ' ' });
-
-                            string indexString = packetline[0].Replace("[", "").Replace("]", "");
-                            UInt32 index = 0;
-                            bool okIndex = UInt32.TryParse(indexString, out index);
-                            string spellIdString = packetline[2];
-                            UInt32 spellId = 0;
-                            bool okSpell = UInt32.TryParse(spellIdString, out spellId);
-
-                            if (okIndex && okSpell)
+                            if (lines[i].Contains("SrecID:"))
                             {
-                                if (index != cooldownData.index)
+                                string[] packetline = lines[i].Split(new char[] { ' ' });
+
+                                string indexString = packetline[0].Replace("[", "").Replace("]", "");
+                                UInt32 index = 0;
+                                bool okIndex = UInt32.TryParse(indexString, out index);
+                                string spellIdString = packetline[2];
+                                UInt32 spellId = 0;
+                                bool okSpell = UInt32.TryParse(spellIdString, out spellId);
+
+                                if (okIndex && okSpell)
                                 {
-                                    currentList.Add(cooldownData);
-                                    cooldownData.index = 0;
-                                    cooldownData.spellId = 0;
-                                    cooldownData.cooldown = 0;
+                                    if (index != cooldownData.index)
+                                    {
+                                        currentList.Add(cooldownData);
+                                        cooldownData.index = 0;
+                                        cooldownData.spellId = 0;
+                                        cooldownData.cooldown = 0;
+                                    }
+
+                                    cooldownData.index = index;
+                                    cooldownData.spellId = spellId;
                                 }
-
-                                cooldownData.index = index;
-                                cooldownData.spellId = spellId;
                             }
-                        }
 
-                        if (lines[i].Contains("ForcedCooldown:"))
-                        {
-                            string[] packetline = lines[i].Split(new char[] { ' ' });
-                            string cooldown = packetline[2];
-                            UInt32.TryParse(cooldown, out cooldownData.cooldown);
+                            if (lines[i].Contains("ForcedCooldown:"))
+                            {
+                                string[] packetline = lines[i].Split(new char[] { ' ' });
+                                string cooldown = packetline[2];
+                                UInt32.TryParse(cooldown, out cooldownData.cooldown);
+                            } 
                         }
-
                     } while (lines[i] != "");
 
                     if (currentCreatureId != 0)
