@@ -362,7 +362,7 @@ namespace ReadSpellData
             var lines = File.ReadAllLines(fileName);
 
             UInt32 currentCreatureId = 0;
-            List<PetSpellCooldown> currentList = null;
+            List<PetSpellCooldown> currentList = new List<PetSpellCooldown>();
             PetSpellCooldown cooldownData;
             cooldownData.index = 0;
             cooldownData.spellId = 0;
