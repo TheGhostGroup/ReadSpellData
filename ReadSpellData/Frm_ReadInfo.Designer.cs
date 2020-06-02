@@ -28,37 +28,25 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.entryListBox = new System.Windows.Forms.ListBox();
-            this.spellRichTextBox = new System.Windows.Forms.RichTextBox();
             this.loadB = new System.Windows.Forms.Button();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.spellListBox = new System.Windows.Forms.ListBox();
-            this.entryLabel = new System.Windows.Forms.Label();
-            this.spellLabel = new System.Windows.Forms.Label();
-            this.spellInfoLable = new System.Windows.Forms.Label();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.exportB = new System.Windows.Forms.Button();
             this.exportSQLB = new System.Windows.Forms.Button();
+            this.lstSpellCasts = new System.Windows.Forms.ListView();
+            this.clmCasterId = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmCasterType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmSpellId = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmCastFlags = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmCastFlagsEx = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmTargetId = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmTargetType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmTime = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chkShowUnique = new System.Windows.Forms.CheckBox();
+            this.chkShowInListView = new System.Windows.Forms.CheckBox();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // entryListBox
-            // 
-            this.entryListBox.FormattingEnabled = true;
-            this.entryListBox.Location = new System.Drawing.Point(12, 80);
-            this.entryListBox.Name = "entryListBox";
-            this.entryListBox.Size = new System.Drawing.Size(162, 498);
-            this.entryListBox.TabIndex = 1;
-            this.entryListBox.SelectedIndexChanged += new System.EventHandler(this.entryListBox_SelectedIndexChanged);
-            // 
-            // spellRichTextBox
-            // 
-            this.spellRichTextBox.Location = new System.Drawing.Point(346, 80);
-            this.spellRichTextBox.Name = "spellRichTextBox";
-            this.spellRichTextBox.Size = new System.Drawing.Size(343, 498);
-            this.spellRichTextBox.TabIndex = 2;
-            this.spellRichTextBox.Text = "";
             // 
             // loadB
             // 
@@ -72,57 +60,24 @@
             // 
             // openFileDialog
             // 
+            this.openFileDialog.DefaultExt = "txt";
             this.openFileDialog.FileName = "openFileDialog";
-            // 
-            // spellListBox
-            // 
-            this.spellListBox.FormattingEnabled = true;
-            this.spellListBox.Location = new System.Drawing.Point(180, 80);
-            this.spellListBox.Name = "spellListBox";
-            this.spellListBox.Size = new System.Drawing.Size(160, 498);
-            this.spellListBox.TabIndex = 6;
-            this.spellListBox.SelectedIndexChanged += new System.EventHandler(this.spellListBox_SelectedIndexChanged);
-            // 
-            // entryLabel
-            // 
-            this.entryLabel.AutoSize = true;
-            this.entryLabel.Location = new System.Drawing.Point(70, 57);
-            this.entryLabel.Name = "entryLabel";
-            this.entryLabel.Size = new System.Drawing.Size(31, 13);
-            this.entryLabel.TabIndex = 8;
-            this.entryLabel.Text = "Entry";
-            // 
-            // spellLabel
-            // 
-            this.spellLabel.AutoSize = true;
-            this.spellLabel.Location = new System.Drawing.Point(239, 61);
-            this.spellLabel.Name = "spellLabel";
-            this.spellLabel.Size = new System.Drawing.Size(44, 13);
-            this.spellLabel.TabIndex = 9;
-            this.spellLabel.Text = "Spell ID";
-            // 
-            // spellInfoLable
-            // 
-            this.spellInfoLable.AutoSize = true;
-            this.spellInfoLable.Location = new System.Drawing.Point(495, 61);
-            this.spellInfoLable.Name = "spellInfoLable";
-            this.spellInfoLable.Size = new System.Drawing.Size(51, 13);
-            this.spellInfoLable.TabIndex = 10;
-            this.spellInfoLable.Text = "Spell Info";
+            this.openFileDialog.Filter = "Parsed Sniff File (*.txt)|*.txt";
+            this.openFileDialog.Multiselect = true;
             // 
             // statusStrip
             // 
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel});
-            this.statusStrip.Location = new System.Drawing.Point(0, 592);
+            this.statusStrip.Location = new System.Drawing.Point(0, 591);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(702, 22);
+            this.statusStrip.Size = new System.Drawing.Size(697, 22);
             this.statusStrip.TabIndex = 11;
             // 
             // toolStripStatusLabel
             // 
             this.toolStripStatusLabel.Name = "toolStripStatusLabel";
-            this.toolStripStatusLabel.Size = new System.Drawing.Size(86, 17);
+            this.toolStripStatusLabel.Size = new System.Drawing.Size(77, 17);
             this.toolStripStatusLabel.Text = "No File Loaded";
             // 
             // exportB
@@ -145,23 +100,107 @@
             this.exportSQLB.UseVisualStyleBackColor = true;
             this.exportSQLB.Click += new System.EventHandler(this.exportSQLB_Click);
             // 
+            // lstSpellCasts
+            // 
+            this.lstSpellCasts.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.clmCasterId,
+            this.clmCasterType,
+            this.clmSpellId,
+            this.clmCastFlags,
+            this.clmCastFlagsEx,
+            this.clmTargetId,
+            this.clmTargetType,
+            this.clmTime});
+            this.lstSpellCasts.FullRowSelect = true;
+            this.lstSpellCasts.GridLines = true;
+            this.lstSpellCasts.Location = new System.Drawing.Point(12, 42);
+            this.lstSpellCasts.Name = "lstSpellCasts";
+            this.lstSpellCasts.Size = new System.Drawing.Size(673, 536);
+            this.lstSpellCasts.TabIndex = 15;
+            this.lstSpellCasts.UseCompatibleStateImageBehavior = false;
+            this.lstSpellCasts.View = System.Windows.Forms.View.Details;
+            this.lstSpellCasts.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.lstSpellCasts_ColumnClick);
+            // 
+            // clmCasterId
+            // 
+            this.clmCasterId.Text = "CasterId";
+            this.clmCasterId.Width = 80;
+            // 
+            // clmCasterType
+            // 
+            this.clmCasterType.Text = "CasterType";
+            this.clmCasterType.Width = 80;
+            // 
+            // clmSpellId
+            // 
+            this.clmSpellId.Text = "SpellId";
+            this.clmSpellId.Width = 80;
+            // 
+            // clmCastFlags
+            // 
+            this.clmCastFlags.Text = "CastFlags";
+            this.clmCastFlags.Width = 80;
+            // 
+            // clmCastFlagsEx
+            // 
+            this.clmCastFlagsEx.Text = "CastFlagsEx";
+            this.clmCastFlagsEx.Width = 80;
+            // 
+            // clmTargetId
+            // 
+            this.clmTargetId.Text = "TargetId";
+            this.clmTargetId.Width = 80;
+            // 
+            // clmTargetType
+            // 
+            this.clmTargetType.Text = "TargetType";
+            this.clmTargetType.Width = 80;
+            // 
+            // clmTime
+            // 
+            this.clmTime.Text = "Time";
+            this.clmTime.Width = 90;
+            // 
+            // chkShowUnique
+            // 
+            this.chkShowUnique.AutoSize = true;
+            this.chkShowUnique.Location = new System.Drawing.Point(358, 17);
+            this.chkShowUnique.Name = "chkShowUnique";
+            this.chkShowUnique.Size = new System.Drawing.Size(110, 17);
+            this.chkShowUnique.TabIndex = 16;
+            this.chkShowUnique.Text = "Unique casts only";
+            this.chkShowUnique.UseVisualStyleBackColor = true;
+            this.chkShowUnique.CheckedChanged += new System.EventHandler(this.chkShowUnique_CheckedChanged);
+            // 
+            // chkShowInListView
+            // 
+            this.chkShowInListView.AutoSize = true;
+            this.chkShowInListView.Checked = true;
+            this.chkShowInListView.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkShowInListView.Location = new System.Drawing.Point(474, 17);
+            this.chkShowInListView.Name = "chkShowInListView";
+            this.chkShowInListView.Size = new System.Drawing.Size(104, 17);
+            this.chkShowInListView.TabIndex = 17;
+            this.chkShowInListView.Text = "Show in list view";
+            this.chkShowInListView.UseVisualStyleBackColor = true;
+            this.chkShowInListView.CheckedChanged += new System.EventHandler(this.chkShowInListView_CheckedChanged);
+            // 
             // Frm_ReadInfo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(702, 614);
+            this.ClientSize = new System.Drawing.Size(697, 613);
+            this.Controls.Add(this.chkShowInListView);
+            this.Controls.Add(this.chkShowUnique);
+            this.Controls.Add(this.lstSpellCasts);
             this.Controls.Add(this.exportSQLB);
             this.Controls.Add(this.exportB);
             this.Controls.Add(this.statusStrip);
-            this.Controls.Add(this.spellInfoLable);
-            this.Controls.Add(this.spellLabel);
-            this.Controls.Add(this.entryLabel);
-            this.Controls.Add(this.spellListBox);
             this.Controls.Add(this.loadB);
-            this.Controls.Add(this.spellRichTextBox);
-            this.Controls.Add(this.entryListBox);
+            this.MinimumSize = new System.Drawing.Size(600, 200);
             this.Name = "Frm_ReadInfo";
             this.Text = "Read Spell Info";
+            this.ResizeEnd += new System.EventHandler(this.Frm_ReadInfo_ResizeEnd);
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
             this.ResumeLayout(false);
@@ -170,17 +209,22 @@
         }
 
         #endregion
-        private System.Windows.Forms.ListBox entryListBox;
         private System.Windows.Forms.Button loadB;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
-        private System.Windows.Forms.ListBox spellListBox;
-        private System.Windows.Forms.Label entryLabel;
-        private System.Windows.Forms.Label spellLabel;
-        private System.Windows.Forms.Label spellInfoLable;
         private System.Windows.Forms.StatusStrip statusStrip;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel;
         private System.Windows.Forms.Button exportB;
-        public System.Windows.Forms.RichTextBox spellRichTextBox;
         private System.Windows.Forms.Button exportSQLB;
+        private System.Windows.Forms.ListView lstSpellCasts;
+        private System.Windows.Forms.ColumnHeader clmCasterId;
+        private System.Windows.Forms.ColumnHeader clmCasterType;
+        private System.Windows.Forms.ColumnHeader clmSpellId;
+        private System.Windows.Forms.ColumnHeader clmCastFlags;
+        private System.Windows.Forms.ColumnHeader clmCastFlagsEx;
+        private System.Windows.Forms.ColumnHeader clmTargetId;
+        private System.Windows.Forms.ColumnHeader clmTargetType;
+        private System.Windows.Forms.ColumnHeader clmTime;
+        private System.Windows.Forms.CheckBox chkShowUnique;
+        private System.Windows.Forms.CheckBox chkShowInListView;
     }
 }

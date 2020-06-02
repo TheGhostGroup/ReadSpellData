@@ -18,10 +18,16 @@ namespace ReadSpellData
         public static DataTable objectDataTable = new DataTable("Objects");
         public static DataTable objectTimingDataTable = new DataTable("ObjectTiming");
         public static List<string> entryList = new List<string>();
+        public MixedListSorter listSorter = new MixedListSorter();
+
+        const uint MAX_LIST_VIEW_ITEMS = 2000; // no sorting if count exceeds this to prevent freeze
+        const uint CLIENT_BUILD_4_3_4 = 15595;
+        const uint CLIENT_BUILD_5_4_8 = 18414;
 
         public Frm_ReadInfo()
         {
             InitializeComponent();
+            lstSpellCasts.ListViewItemSorter = listSorter;
             Reading.SetupDataTable();
         }
 
@@ -32,22 +38,50 @@ namespace ReadSpellData
             openFileDialog.FileName = "*.txt";
             openFileDialog.FilterIndex = 1;
             openFileDialog.ShowReadOnly = false;
-            openFileDialog.Multiselect = false;
+            openFileDialog.Multiselect = true;
             openFileDialog.CheckFileExists = true;
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                toolStripStatusLabel.Text = "Loading...";
-                statusStrip.Update();
-                Data.fileName = System.IO.Path.GetFileName(openFileDialog.FileName);
-                LoadSniffFileIntoDatatable(openFileDialog.FileName);
-                toolStripStatusLabel.Text = Data.fileName;
+                if (openFileDialog.FileNames.Length == 1)
+                    LoadParsedSniff(openFileDialog.FileName);
+                else
+                {
+                    string sql = "";
+                    foreach (String fileName in openFileDialog.FileNames)
+                    {
+                        LoadParsedSniff(fileName);
+                        sql += Data.GenerateSaveString();
+                        
+                    }
+                    if (Utility.ShowSaveDialog(ref sql) == DialogResult.OK)
+                        Database.WriteDB(sql);
+                }
+                
             }
             else
             {
                 // This code runs if the dialog was cancelled
                 return;
             }
+        }
+
+        public void LoadParsedSniff(string fileName)
+        {
+            Data.clientBuild = Reading.GetBuild(fileName);
+            if (Data.clientBuild == 0)
+            {
+                string buildString = "";
+                if (Utility.ShowInputDialog(ref buildString, "Enter client build number") == DialogResult.OK)
+                {
+                    UInt32.TryParse(buildString, out Data.clientBuild);
+                }
+            }
+            toolStripStatusLabel.Text = "Loading...";
+            statusStrip.Update();
+            Data.fileName = System.IO.Path.GetFileName(fileName);
+            LoadSniffFileIntoDatatable(fileName);
+            toolStripStatusLabel.Text = Data.fileName;
         }
 
         public void LoadSniffFileIntoDatatable(string fileName)
@@ -59,131 +93,91 @@ namespace ReadSpellData
             if (line == "# TrinityCore - WowPacketParser")
             {
                 Utility.WriteLog("- Exporting creature data from parsed sniff..");
-                Reading.GetCreatureSpells(fileName.ToString());
-                Data.ParseData();
-                FillListBoxs();
-            }
-            else
-            {
-                MessageBox.Show(openFileDialog.FileName + " is is not a valid TrinityCore parsed sniff file.", "File Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
-            }
-        }
 
-        public void FillListBoxs()
-        {
-            List<string> lst = new List<string>();
-
-            foreach (DataRow r in objectDataTable.Rows)
-            {
-                string objectID = r["ObjectID"].ToString();
-
-                if (!lst.Contains(objectID))
-                    lst.Add(r["ObjectID"].ToString());
-            }
-
-            lst.Sort();
-            if (entryListBox.DataSource != lst)
-                entryListBox.DataSource = lst;
-            entryListBox.Refresh();
-        }
-
-        private void entryListBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            List<string> lst = new List<string>();
-            string ObjectID = entryListBox.SelectedItem.ToString();
-
-            if (Data.castsList.Count > 0)
-            {
-                foreach (SpellCastData listData in Data.castsList)
+                if (Data.clientBuild <= CLIENT_BUILD_4_3_4)
+                    Reading.GetCreatureSpellsCata(fileName.ToString());
+                else if (Data.clientBuild <= CLIENT_BUILD_5_4_8)
                 {
-                    //if (!lst.Contains(ObjectID))
-                    if (ObjectID == listData.casterId.ToString())
-                    {
-                        if (listData.targetType != "")
-                        {
-                            lst.Add(listData.spellId.ToString() + " " + listData.targetType.ToString());
-                        }
-                        else
-                        {
-                            lst.Add(listData.spellId.ToString());
-                        }
-                    }
-                }
-            }
-
-            lst.Sort();
-            if (spellListBox.DataSource != lst)
-                spellListBox.DataSource = lst;
-            spellListBox.Refresh();
-        }
-
-        private void spellListBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            string selectedInfo = spellListBox.SelectedItem.ToString();
-            spellRichTextBox.Text = "";
-
-            if (selectedInfo.Contains(" "))
-            {
-                string[] selectedInfo_split;
-                selectedInfo_split = Regex.Split(selectedInfo, " ");
-
-                if (selectedInfo_split.Length > 0)
-                {
-                    DataRow[] spellIDResult = Frm_ReadInfo.objectDataTable.Select("SpellID = '" + selectedInfo_split[0] + "' AND CasterTargetID = '" + selectedInfo_split[1] + "'");
-                    foreach (DataRow r in spellIDResult)
-                    {
-                        string objectid = r["ObjectID"].ToString();
-                        string objecttype = r["ObjectType"].ToString();
-                        string spellid = r["SpellID"].ToString();
-                        string castflags = r["CastFlags"].ToString();
-                        string castflagsex = r["CastFlagsEx"].ToString();
-                        string castertargetid = r["CasterTargetID"].ToString();
-                        string castertarget = r["CasterTarget"].ToString();
-                        string intervaltime = r["IntervalTime"].ToString();
-
-
-                        StringBuilder sb = new StringBuilder(spellRichTextBox.Text);
-                        //sb.Append(Environment.NewLine);
-                        sb.Append("ObjectID: " + objectid + Environment.NewLine);
-                        sb.Append("ObjectType: " + objecttype + Environment.NewLine);
-                        sb.Append("SpellID: " + spellid + Environment.NewLine);
-                        sb.Append("CastFlags: " + castflags + Environment.NewLine);
-                        sb.Append("CastFlagsEx: " + castflagsex + Environment.NewLine);
-                        sb.Append("CasterTargetID: " + castertargetid + Environment.NewLine);
-                        sb.Append("CasterTarget: " + castertarget + Environment.NewLine);
-                        sb.Append("IntervalTime: " + intervaltime + Environment.NewLine);
-
-                        spellRichTextBox.Text = sb.ToString();
-                        return;
-                    }
-                }
-            }
-            else
-            {
-                DataRow[] spellIDResult = Frm_ReadInfo.objectDataTable.Select("SpellID = '" + selectedInfo + "'");
-                foreach (DataRow r in spellIDResult)
-                {
-                    string objectid = r["ObjectID"].ToString();
-                    string objecttype = r["ObjectType"].ToString();
-                    string spellid = r["SpellID"].ToString();
-                    string castflags = r["CastFlags"].ToString();
-                    string castflagsex = r["CastFlagsEx"].ToString();
-                    string castertargetid = r["CasterTargetID"].ToString();
-                    string castertarget = r["CasterTarget"].ToString();
-                    string intervaltime = r["IntervalTime"].ToString();
-
-                    StringBuilder sb = new StringBuilder(spellRichTextBox.Text);
-                    sb.Append("ObjectID: " + objectid + Environment.NewLine);
-                    sb.Append("ObjectType: " + objecttype + Environment.NewLine);
-                    sb.Append("SpellID: " + spellid + Environment.NewLine);
-                    sb.Append("CastFlags: " + castflags + Environment.NewLine);
-                    sb.Append("CastFlagsEx: " + castflagsex + Environment.NewLine);
-                    sb.Append("CasterTargetID: " + castertargetid + Environment.NewLine);
-                    sb.Append("CasterTarget: " + castertarget + Environment.NewLine);
-                    sb.Append("IntervalTime: " + intervaltime + Environment.NewLine);
-
-                    spellRichTextBox.Text = sb.ToString();
+                    MessageBox.Show("This client build is not currently supported.");
                     return;
+                }
+                else
+                {
+                    Reading.GetCreatureSpellsClassic(fileName.ToString());
+                    Reading.GetPetCooldownsClassic(fileName.ToString());
+                    Reading.GetPetSpellsClassic(fileName.ToString());
+                }
+                    
+
+                Data.ParseData();
+
+                if (chkShowInListView.Checked == true)
+                    FillListView();
+            }
+            else
+            {
+                MessageBox.Show(fileName + " is is not a valid TrinityCore parsed sniff file.", "File Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+            }
+        }
+
+        public void FillListView()
+        {
+            lstSpellCasts.Items.Clear();
+            if (chkShowUnique.Checked)
+            {
+                if (Data.castsList.Count > MAX_LIST_VIEW_ITEMS)
+                    lstSpellCasts.ListViewItemSorter = null;
+                else
+                    lstSpellCasts.ListViewItemSorter = listSorter;
+
+                foreach (SpellCastData castDetails in Data.castsList)
+                {
+                    ListViewItem lvi = new ListViewItem();
+                    lvi.Text = castDetails.casterId.ToString(); ;
+                    lvi.SubItems.Add(castDetails.casterType);
+                    lvi.SubItems.Add(castDetails.spellId.ToString());
+                    lvi.SubItems.Add(castDetails.castFlags.ToString());
+                    lvi.SubItems.Add(castDetails.castFlagsEx.ToString());
+                    lvi.SubItems.Add(castDetails.targetId.ToString());
+                    lvi.SubItems.Add(castDetails.targetType);
+
+                    string cooldown = "";
+                    SpellCooldownKey cdKey = new SpellCooldownKey(castDetails.casterId, castDetails.casterType, castDetails.spellId);
+                    if (Data.spellCooldownsMap.ContainsKey(cdKey))
+                        cooldown = Data.spellCooldownsMap[cdKey].cooldownMin.ToString() + " - " + Data.spellCooldownsMap[cdKey].cooldownMax.ToString();
+                    lvi.SubItems.Add(cooldown);
+
+                    lstSpellCasts.Items.Add(lvi);
+                }
+            }
+            else
+            {
+                if (Frm_ReadInfo.objectDataTable.Rows.Count > MAX_LIST_VIEW_ITEMS)
+                    lstSpellCasts.ListViewItemSorter = null;
+                else
+                    lstSpellCasts.ListViewItemSorter = listSorter;
+
+                foreach (DataRow rowDetails in Frm_ReadInfo.objectDataTable.Rows)
+                {
+                    string rowObjectID = rowDetails["ObjectID"].ToString();
+                    string rowObjectType = rowDetails["ObjectType"].ToString();
+                    string rowSpellID = rowDetails["SpellID"].ToString();
+                    string rowCastFlags = rowDetails["CastFlags"].ToString();
+                    string rowCastFlagsEx = rowDetails["CastFlagsEx"].ToString();
+                    string rowTargetId = rowDetails["CasterTarget"].ToString();
+                    string rowTargetType = rowDetails["CasterTargetID"].ToString();
+                    string rowTime = rowDetails["Time"].ToString();
+
+                    ListViewItem lvi = new ListViewItem();
+                    lvi.Text = rowObjectID;
+                    lvi.SubItems.Add(rowObjectType);
+                    lvi.SubItems.Add(rowSpellID);
+                    lvi.SubItems.Add(rowCastFlags);
+                    lvi.SubItems.Add(rowCastFlagsEx);
+                    lvi.SubItems.Add(rowTargetId);
+                    lvi.SubItems.Add(rowTargetType);
+                    lvi.SubItems.Add(rowTime);
+                    lstSpellCasts.Items.Add(lvi);
                 }
             }
         }
@@ -198,6 +192,46 @@ namespace ReadSpellData
             string sql = Data.GenerateSaveString();
             if (Utility.ShowSaveDialog(ref sql) == DialogResult.OK)
                 Database.WriteDB(sql);
+        }
+
+        private void lstSpellCasts_ColumnClick(object sender, ColumnClickEventArgs e)
+        {
+            if (lstSpellCasts.ListViewItemSorter == null)
+                return;
+
+            // Sort the items when column is clicked.
+            MixedListSorter s = (MixedListSorter)lstSpellCasts.ListViewItemSorter;
+            s.Column = e.Column;
+
+            if (s.Order == System.Windows.Forms.SortOrder.Ascending)
+                s.Order = System.Windows.Forms.SortOrder.Descending;
+            else
+                s.Order = System.Windows.Forms.SortOrder.Ascending;
+            lstSpellCasts.Sort();
+        }
+
+        private void chkShowUnique_CheckedChanged(object sender, EventArgs e)
+        {
+            // Change name of last column since showing Time for filtered list is not useful
+            if (chkShowUnique.Checked)
+                lstSpellCasts.Columns[7].Text = "Cooldown";
+            else
+                lstSpellCasts.Columns[7].Text = "Time";
+
+            FillListView();
+        }
+
+        private void Frm_ReadInfo_ResizeEnd(object sender, EventArgs e)
+        {
+            lstSpellCasts.Size = new Size(this.Size.Width - 32, statusStrip.Location.Y - lstSpellCasts.Location.Y - 10);
+        }
+
+        private void chkShowInListView_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkShowInListView.Checked == true)
+                FillListView();
+            else
+                lstSpellCasts.Items.Clear();
         }
     }
 }

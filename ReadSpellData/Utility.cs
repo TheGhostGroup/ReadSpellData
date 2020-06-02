@@ -10,22 +10,6 @@ namespace ReadSpellData
 {
     class Utility
     {
-        public static void WriteToRichTextBoxSpellInfo(string text)
-        {
-            try
-            {
-                Frm_ReadInfo form = new Frm_ReadInfo();
-                StringBuilder sb = new StringBuilder(form.spellRichTextBox.Text);
-                sb.Append(Environment.NewLine);
-                sb.Append(text);
-                form.spellRichTextBox.Text = sb.ToString();
-            }
-            catch (Exception e)
-            {
-                WriteLog(e.ToString());
-            }
-        }
-
         public static void WriteLog(string strLog)
         {
             StreamWriter log;
@@ -98,6 +82,94 @@ namespace ReadSpellData
             DialogResult result = saveBox.ShowDialog();
             query = textBox.Text;
             return result;
+        }
+        // Shows an input box that returns a value.
+        public static DialogResult ShowInputDialog(ref string input, string name)
+        {
+            System.Drawing.Size size = new System.Drawing.Size(200, 70);
+            Form inputBox = new Form();
+
+            inputBox.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            inputBox.ClientSize = size;
+            inputBox.Text = name;
+            inputBox.MaximizeBox = false;
+            inputBox.MinimizeBox = false;
+            inputBox.StartPosition = FormStartPosition.CenterParent;
+
+            System.Windows.Forms.TextBox textBox = new TextBox();
+            textBox.Size = new System.Drawing.Size(size.Width - 10, 23);
+            textBox.Location = new System.Drawing.Point(5, 5);
+            textBox.Text = input;
+            inputBox.Controls.Add(textBox);
+
+            Button okButton = new Button();
+            okButton.DialogResult = System.Windows.Forms.DialogResult.OK;
+            okButton.Name = "okButton";
+            okButton.Size = new System.Drawing.Size(75, 23);
+            okButton.Text = "&OK";
+            okButton.Location = new System.Drawing.Point(size.Width - 80 - 80, 39);
+            inputBox.Controls.Add(okButton);
+
+            Button cancelButton = new Button();
+            cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            cancelButton.Name = "cancelButton";
+            cancelButton.Size = new System.Drawing.Size(75, 23);
+            cancelButton.Text = "&Cancel";
+            cancelButton.Location = new System.Drawing.Point(size.Width - 80, 39);
+            inputBox.Controls.Add(cancelButton);
+
+            inputBox.AcceptButton = okButton;
+            inputBox.CancelButton = cancelButton;
+
+            DialogResult result = inputBox.ShowDialog();
+            input = textBox.Text;
+            return result;
+        }
+    }
+    public class MixedListSorter : System.Collections.IComparer
+    {
+        public int Column = 0;
+        public System.Windows.Forms.SortOrder Order = SortOrder.Ascending;
+        public int Compare(object x, object y) // IComparer Member
+        {
+            if (!(x is ListViewItem))
+                return (0);
+            if (!(y is ListViewItem))
+                return (0);
+
+            ListViewItem l1 = (ListViewItem)x;
+            ListViewItem l2 = (ListViewItem)y;
+
+            int intValue1;
+
+            if (Int32.TryParse(l1.SubItems[Column].Text, out intValue1))
+            {
+                int intValue2;
+                Int32.TryParse(l2.SubItems[Column].Text, out intValue2);
+
+                if (Order == SortOrder.Ascending)
+                {
+                    return intValue1.CompareTo(intValue2);
+                }
+                else
+                {
+                    return intValue2.CompareTo(intValue1);
+                }
+            }
+            else
+            {
+                string str1 = l1.SubItems[Column].Text;
+                string str2 = l2.SubItems[Column].Text;
+
+                if (Order == SortOrder.Ascending)
+                {
+                    return str1.CompareTo(str2);
+                }
+                else
+                {
+                    return str2.CompareTo(str1);
+                }
+            }
         }
     }
 }
